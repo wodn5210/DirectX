@@ -5,8 +5,6 @@
 #include <strsafe.h>
 #pragma warning( default : 4996 )
 
-#define OBC 3
-
 
 
 //-----------------------------------------------------------------------------
@@ -18,10 +16,12 @@ LPDIRECT3DVERTEXBUFFER9 g_pVB = NULL;								//vertex 버퍼
 
 struct CUSTOMVERTEX
 {
-	FLOAT x, y, z;
-	DWORD color;
+	D3DXVECTOR3 position;
+	D3DXVECTOR3 normal;
+	//DWORD color;
 };
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ| D3DFVF_DIFFUSE)
+//#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ| D3DFVF_DIFFUSE)
+#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ| D3DFVF_NORMAL)
 
 //-----------------------------------------------------------------------------
 // Name: InitD3D()
@@ -40,9 +40,13 @@ HRESULT InitD3D(HWND hWnd)
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
 
+	//복잡한 오브젝트 그릴거라 Z버퍼 필요함 - 아래서 설정하는데 이건뭔지 몰겠
+	d3dpp.EnableAutoDepthStencil = TRUE;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+
 
 	if (FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,		//모니터번호, 출력디바이스(하드웨어 가속 지원 디바이스), 포커스 윈도우			
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,			//정점 셰이더 SW가속
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING,			//정점 셰이더 SW가속
 		&d3dpp, &g_pd3dDevice)))					//구조체 포인터, IDirect3DDevice9 받음
 	{
 		return E_FAIL;
@@ -50,39 +54,42 @@ HRESULT InitD3D(HWND hWnd)
 	// Turn off culling, so we see the front and back of the triangle
 	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	// Turn off D3D lighting, since we are providing our own vertex colors
-	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	//// 정점에 있는 색값을 사용할때는 광원기능 끈다
+	//g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+
+	// Z버퍼 기능 ON
+	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 
 	return S_OK;
 }
 
-LRESULT InitVB()
+HRESULT InitGeometry()
 {
-
-	CUSTOMVERTEX vertices[] =
-	{
-		{ -1.0f,-1.0f, 0.0f,0xffff0000, },
-		{  1.0f,-1.0f, 0.0f, 0xff0000ff, },
-		{  0.0f, 1.0f, 0.0f, 0xffffffff, },
-	};
 
 	//정점 버퍼 생성
 	//CreateVertexBuffer(사이즈, 버퍼처리방식-SW/HW, FVF플래그, 정점버퍼 메모리 위치, 반환될 버퍼의 인터페이스) -> 이 코드는 GPU메모리에 보관
-	if (FAILED(g_pd3dDevice->CreateVertexBuffer(OBC * sizeof(CUSTOMVERTEX), 
+	if (FAILED(g_pd3dDevice->CreateVertexBuffer(50 * 2 * sizeof(CUSTOMVERTEX), 
 		0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &g_pVB, NULL)))
 	{
 		return E_FAIL;
 	}
 
 	//새로생성된 정점버퍼는 쓰레기값 -> Lock으로 포인터 가져와서 데이터 채운후 Unlock 하자
-	VOID* pVertices;
+	CUSTOMVERTEX* pVertices;
 
 	//Lock (Lock할 버퍼의 시작점, Lock할 버퍼 크기, 읽고 쓸수있는 메모리영역 포인터, Lock할때 함께 사용하는 플래그) -> 그럼 여기서 pVertices는 GPU메모리인가?
-	if (FAILED(g_pVB->Lock(0, sizeof(vertices), (void**)& pVertices, 0)))
+	//시작과 크기 모두 0 이면 버퍼전체
+	if (FAILED(g_pVB->Lock(0, 0, (void**)&pVertices, 0)))
 		return E_FAIL;
 
-	//정점정보 복사
-	memcpy(pVertices, vertices, sizeof(vertices));
+	for (DWORD i = 0; i < 50; i++) 
+	{
+		FLOAT theta = (2 * D3DX_PI * i) / (50 - 1);
+		pVertices[2 * i + 0].position = D3DXVECTOR3(sinf(theta), -1.f, cosf(theta));	//아래쪽 원통좌표
+		pVertices[2 * i + 0].normal = D3DXVECTOR3(sinf(theta), 0.f, cosf(theta));		//아래쪽 원통의 법선벡터
+		pVertices[2 * i + 1].position = D3DXVECTOR3(sinf(theta), 1.f, cosf(theta));		//위쪽 원통좌표
+		pVertices[2 * i + 1].normal = D3DXVECTOR3(sinf(theta), 0.f, cosf(theta));		//위쪽 원통의 법선벡터
+	}
 
 	//Lock과 Unlock은 쌍으로 존재해야함
 	g_pVB->Unlock();
@@ -111,16 +118,18 @@ VOID SetupMatrices()
 {
 	//월드행렬
 	D3DXMATRIXA16 matWorld;
+	//D3DXMatrixIdentity(&matWorld);								//갑자기 이거 왜? 안해도 잘되던데
+	D3DXMatrixRotationX(&matWorld, timeGetTime() / 500.f);
+	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	//UINT iTime = timeGetTime() % 1000;						// float연산 정밀도 위해서 나머지연산
+	//FLOAT fAngle = iTime * (2.0f * D3DX_PI) / 1000.0f;		// 1초마다 한바퀴씩 회전하는 행렬
+	//D3DXMatrixRotationY(&matWorld, fAngle);					// Y축을 회전축으로 회전 행렬을 생성
+	//g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);		// 생성한 회전행렬을 월드 행렬로 디바이스에 설정
 
-	UINT iTime = timeGetTime() % 1000;						// float연산 정밀도 위해서 나머지연산
-	FLOAT fAngle = iTime * (2.0f * D3DX_PI) / 1000.0f;		// 1초마다 한바퀴씩 회전하는 행렬
-	D3DXMatrixRotationY(&matWorld, fAngle);					// Y축을 회전축으로 회전 행렬을 생성
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);		// 생성한 회전행렬을 월드 행렬로 디바이스에 설정
 
 	D3DXVECTOR3 vEyePt(0.0f, 3.0f, -5.0f);						// 눈위치
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);					// 눈이 바라보는 위치
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);						// 천장 방향을 나타내는 벡터
-
 	D3DXMATRIXA16 matView;			
 	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);		// 1, 2, 3의 값으로 뷰 행렬 생성
 	g_pd3dDevice->SetTransform(D3DTS_VIEW, &matView);				// 생성한 뷰 행렬을 디바이스에 설정
@@ -129,6 +138,43 @@ VOID SetupMatrices()
 	D3DXMATRIXA16 matProj;
 	D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 1.0f, 1.0f, 100.0f);		//(입력할 프로젝션 행렬, 시야각(45도), 종횡비, 근접 ~ 원거리 클리핑 평면
 	g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);					//프로젝션 행렬을 디바이스에 설정
+}
+
+VOID SetupLights()
+{
+	//재질(material) 설정 (확산광 + 주변광)- 디바이스에 하나만 설정가능
+	D3DMATERIAL9 mtrl;
+	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+	mtrl.Diffuse.r = mtrl.Ambient.r = 1.f;
+	mtrl.Diffuse.g = mtrl.Ambient.g = 1.f;
+	mtrl.Diffuse.b = mtrl.Ambient.b = 0.f;
+	mtrl.Diffuse.a = mtrl.Ambient.a = 1.f;
+	g_pd3dDevice->SetMaterial(&mtrl);
+	
+	/*
+	재질은 DrawPrimitive() 호출 시에 하나만 지정가능
+	메시가 여러개의 재질로 이루어져 있다면 메시를 재질별로 분리해야함 - 2-6에서 메시다룰때 다시보자
+	*/
+
+
+	//방향성 광원 설정
+	D3DXVECTOR3 vecDir;													//빛의 방향
+	D3DLIGHT9 light;													//광원 구조체
+	ZeroMemory(&light, sizeof(D3DLIGHT9));
+	light.Type = D3DLIGHT_DIRECTIONAL;									//광원의 종류 (점, 방향성, 점적 선택가능)
+	light.Diffuse.r = 1.f;
+	light.Diffuse.g = 1.f;
+	light.Diffuse.b = 1.f;
+	vecDir = D3DXVECTOR3(cosf(timeGetTime()/350.f),
+		1.f, sinf(timeGetTime() / 350.f));		//광선방향
+	D3DXVec3Normalize((D3DXVECTOR3*) &light.Direction, &vecDir);		//광선 방향 단위벡터
+
+	light.Range = 1000.f;												//광원 다다를 수 있는 최대길이
+	g_pd3dDevice->SetLight(0, &light);									//디바이스에 0번광원 설정
+	g_pd3dDevice->LightEnable(0, TRUE);									//0번 광원 사용
+	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);					//광원설정 ON
+	
+	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x000f0f0f);			//환경광 설정
 }
 
 
@@ -142,22 +188,23 @@ VOID Render()
 		return;
 
 	// Clear the backbuffer to a blue color
-	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);			//화면 한 색으로 초기화
+	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 125), 1.0f, 0);			//화면 한 색으로 초기화
 
+	SetupLights();
 	SetupMatrices();																		//월드, 뷰, 프로젝션 행렬 설정
+	
 
 	// Begin the scene
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))													//폴리곤 그린다고 알리기
 	{
-
-
+		
 		// 삼각형 그리기 시작함
 		//1. 정점정보가 담겨있는 정정버퍼를 출력 스트림으로 할당									정점버퍼 디바이스에 결함
 		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
 		//2. D3D에게 정점 셰이더 정보 지정 - 대부분 FVF만 지정										정점 포맷을 디바이스에 지정
 		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
 		//3. 기하정보 출력하는 DrawPrimitive() 함수 호출											가장 성능 좋은것은 DrawIndexedPrimitive()								정점버퍼의 폴리곤 그림
-		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2*50-2);
 
 		// End the scene
 		g_pd3dDevice->EndScene();																	//폴리곤 다 그림
@@ -215,14 +262,14 @@ INT WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, INT)
 
 	// Create the application's window
 	HWND hWnd = CreateWindow(L"D3D Tutorial", L"D3D Tutorial 01: CreateDevice",
-		WS_OVERLAPPEDWINDOW, 100, 100, 256, 256,
+		WS_OVERLAPPEDWINDOW, 100, 100, 400, 400,
 		NULL, NULL, wc.hInstance, NULL);
 
 	// Initialize Direct3D
 	if (SUCCEEDED(InitD3D(hWnd)))
 	{
 		//정점 버퍼 초기화
-		if (SUCCEEDED(InitVB()))
+		if (SUCCEEDED(InitGeometry()))
 		{
 			// Show the window 윈도우 출력
 			ShowWindow(hWnd, SW_SHOWDEFAULT);
