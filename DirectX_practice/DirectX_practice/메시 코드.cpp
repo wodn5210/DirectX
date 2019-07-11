@@ -5,24 +5,19 @@
 #include <strsafe.h>
 #pragma warning( default : 4996 )
 
-struct MYINDEX
-{
-	WORD _0, _1, _2;
-};
-struct CUSTOMVERTEX
-{
-	FLOAT x, y, z;
-	DWORD color;
-};
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE)
+#define SHOW_HOW_TO_USE_TCI
+
 
 //-----------------------------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------------------------
-LPDIRECT3D9         g_pD3D = NULL;			//D3D 디바이스 생성할 D3D객체 변수
-LPDIRECT3DDEVICE9   g_pd3dDevice = NULL;	//렌더링에 사용될 D3D디바이스
-LPDIRECT3DVERTEXBUFFER9 g_pVB = NULL;		//정점 버퍼
-LPDIRECT3DINDEXBUFFER9 g_pIB = NULL;			//인덱스 버퍼
+LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice	IDriect3D 객체생성(COM)
+LPDIRECT3DDEVICE9   g_pd3dDevice = NULL; // Our rendering device	IDirect3DDevice9
+
+LPD3DXMESH			g_pMesh = NULL;
+D3DMATERIAL9*		g_pMeshMaterials = NULL;
+LPDIRECT3DTEXTURE9* g_pMeshTextures = NULL;
+DWORD				g_dwNumMaterials = 0L;
 
 
 //-----------------------------------------------------------------------------
@@ -31,7 +26,7 @@ LPDIRECT3DINDEXBUFFER9 g_pIB = NULL;			//인덱스 버퍼
 //-----------------------------------------------------------------------------
 HRESULT InitD3D(HWND hWnd)
 {
-	// D3D객체 생성
+	// Create the D3D object, which is needed to create the D3DDevice.
 	if (NULL == (g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)))					//IDriect3D 객체생성(COM) ->IDiret3Ddevice9생성하면 필요없음
 		return E_FAIL;
 
@@ -44,7 +39,7 @@ HRESULT InitD3D(HWND hWnd)
 
 	//복잡한 오브젝트 그릴거라 Z버퍼 필요함 - 깊이처리부분
 	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 
 
 	if (FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,		//모니터번호, 출력디바이스(하드웨어 가속 지원 디바이스), 포커스 윈도우			
@@ -53,101 +48,86 @@ HRESULT InitD3D(HWND hWnd)
 	{
 		return E_FAIL;
 	}
-	// Turn off culling, so we see the front and back of the triangle
-	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	//// Turn off culling, so we see the front and back of the triangle
+	//g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	// Z버퍼 기능 ON
 	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 
-	//광원기능 off
-	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, false);
-
 	return S_OK;
 }
 
-
-/*
-정점 버퍼 생성 -> 정점 값 채워 넣기
-*/
-HRESULT InitVB()
+HRESULT InitGeometry()
 {
-	//큐브 정점 선언
-	CUSTOMVERTEX vertices[] =
-	{
-		{-1, 1, 1, 0xffff0000},		//v0
-		{1, 1, 1, 0xff00ff00},		//v1
-		{1, 1, -1, 0xff0000ff},		//v2
-		{-1, 1, -1, 0xffffff00},	//v3
+	/*
+	모든 메시 파일은 여러개의 폴리곤으로 구성되어 있고, 폴리곤은 각각의 재질을 가질수 있음
+	재질이 여러개일 경우 메시를 재질별로 부분메시로 분할
+	분할된 부분메시는 부분메시별로 따로 그림 -> DrawSubset()
+	*/
 
-		{-1, -1, 1, 0xff00ffff},	//v4
-		{1, -1, 1, 0xffff00ff},		//v5
-		{1, -1, -1, 0xff000000},	//v6
-		{-1, -1, -1, 0xffffffff},	//v7
-	};
+	//재질 임시 보관 버퍼
+	LPD3DXBUFFER pD3DXMtrlBuffer;
 
-	//정점 버퍼 생성 - 8개의 정점 보관할 메모리 생성 - FVF로 데이터 형식 지정
-	if (FAILED(g_pd3dDevice->CreateVertexBuffer(8 * sizeof(CUSTOMVERTEX), 
-		0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &g_pVB, NULL)))
+	//tiger.x에서 메쉬정보와 재질정보 읽는다
+	if (FAILED(D3DXLoadMeshFromX(L"Tiger.x", D3DXMESH_SYSTEMMEM, 
+		g_pd3dDevice, NULL, &pD3DXMtrlBuffer, NULL, &g_dwNumMaterials, &g_pMesh)))
 	{
+		MessageBox(NULL, L"Could not find Tiger.x", L"Mesh.exe", MB_OK);
 		return E_FAIL;
 	}
 
-	//정점 버퍼를 값으로 채운다 - Lock호출해서 포인터 얻어온다
-	VOID* pVertices;
-	if (FAILED(g_pVB->Lock(0, sizeof(vertices), (void**)& pVertices, 0)))
-	{
-		return E_FAIL;
+	//재질정보와 텍스쳐 정보를 따로 뽑아낸다.
+	D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();	
+	//재질 개수만큼 재질 구조체 배열 생성
+	g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
+	//재질 개수만큼 텍스쳐 배열 생성
+	g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
+	
+	for (DWORD i = 0; i < g_dwNumMaterials; i++) 
+	{		
+		g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;					//재질 정보 복사
+		g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;		//주변광원 정보를 Diffuse 정보로
+		g_pMeshTextures[i] = NULL;										
+																 
+		if (d3dxMaterials[i].pTextureFilename != NULL && lstrlen((LPCWSTR)d3dxMaterials[i].pTextureFilename) > 0)
+		{
+			//텍스쳐를 파일에서 로드한다
+			if (FAILED(D3DXCreateTextureFromFile(g_pd3dDevice,
+				L"Tiger.bmp", &g_pMeshTextures[i])))
+			{
+				MessageBox(NULL, L"Could not find texture map", L"Mesh.exe", MB_OK);
+				return E_FAIL;
+			}
+		}
 	}
-	memcpy(pVertices, vertices, sizeof(vertices));
-	g_pVB->Unlock();
 
+	//임시생성 재질버퍼 해제
+	pD3DXMtrlBuffer->Release();
 
-	//정점 버퍼 생성 - 8개의 정점을 보관할 메모리 할당 - FVF로 보관할 데이터 형식 지정
 	return S_OK;
 }
 
 
-HRESULT InitIB()
-{
-	MYINDEX indices[] =
-	{
-	{0, 1, 2}, {0, 2, 3},	//위
-	{4, 6, 5}, {4, 7, 6},	//아래
-	{0, 3, 7}, {0, 7, 4},	//왼
-	{1, 5, 6}, {1, 6, 2},	//오
-	{3, 2, 6}, {3, 6, 7},	//앞
-	{0, 4, 5}, {0, 5, 1}	//뒤
-	};
-
-	//인덱스 버퍼 생성													WORD형 선언이기때문에 INDEX16
-	if (FAILED(g_pd3dDevice->CreateIndexBuffer(12 * sizeof(MYINDEX), 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &g_pIB, NULL)))
-	{
-		return E_FAIL;
-	}
-
-	//인덱스 버퍼를 값으로 채우자
-	//인덱스 버퍼의 LOCK 함수 호출하여 포인터 얻어옴
-	VOID* pIndices;
-	if (FAILED(g_pIB->Lock(0, sizeof(indices), (void**)& pIndices, 0)))
-	{
-		return E_FAIL;
-	}
-	memcpy(pIndices, indices, sizeof(indices));
-	g_pIB->Unlock();
-
-	return S_OK;
-}
 //-----------------------------------------------------------------------------
 // Name: Cleanup()
 // Desc: Releases all previously initialized objects
 //-----------------------------------------------------------------------------
 VOID Cleanup()
 {
-	if (g_pIB != NULL)
-		g_pIB->Release();
+	if (g_pMeshMaterials != NULL)
+		delete[] g_pMeshMaterials;
 
-	if (g_pVB != NULL)
-		g_pVB->Release();
+	if (g_pMeshTextures)
+	{
+		for (DWORD i = 0; i < g_dwNumMaterials; i++)
+		{
+			if (g_pMeshTextures[i])
+				g_pMeshTextures[i]->Release();
+		}
+		delete[] g_pMeshTextures;
+	}
+	if (g_pMesh != NULL)
+		g_pMesh->Release();
 
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
@@ -161,11 +141,11 @@ VOID SetupMatrices()
 	//월드행렬
 	D3DXMATRIXA16 matWorld;
 	//D3DXMatrixIdentity(&matWorld);								//갑자기 이거 왜? 안해도 잘되던데
-	D3DXMatrixRotationY(&matWorld, GetTickCount() / 500.f);
+	D3DXMatrixRotationY(&matWorld, timeGetTime() / 1000.f);
 	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 
-	D3DXVECTOR3 vEyePt(5.0f, 5.0f, -5.0f);						// 눈위치
+	D3DXVECTOR3 vEyePt(0.0f, 3.0f, -5.0f);						// 눈위치
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);					// 눈이 바라보는 위치
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);						// 천장 방향을 나타내는 벡터
 	D3DXMATRIXA16 matView;
@@ -180,13 +160,20 @@ VOID SetupMatrices()
 
 VOID SetupLights()
 {
-	D3DMATERIAL9 mtrl;
-	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-	mtrl.Diffuse.r = mtrl.Ambient.r = 1.f;
-	mtrl.Diffuse.g = mtrl.Ambient.g = 0.f;
-	mtrl.Diffuse.b = mtrl.Ambient.b = 0.f;
-	mtrl.Diffuse.a = mtrl.Ambient.a = 1.f;
-	g_pd3dDevice->SetMaterial(&mtrl);
+	////재질(material) 설정 (확산광 + 주변광)- 디바이스에 하나만 설정가능
+	//D3DMATERIAL9 mtrl;
+	//ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+	//mtrl.Diffuse.r = mtrl.Ambient.r = 1.f;
+	//mtrl.Diffuse.g = mtrl.Ambient.g = 1.f;
+	//mtrl.Diffuse.b = mtrl.Ambient.b = 1.f;
+	//g_pd3dDevice->SetMaterial(&mtrl);
+
+	/*
+	재질은 DrawPrimitive() 호출 시에 하나만 지정가능
+	메시가 여러개의 재질로 이루어져 있다면 메시를 재질별로 분리해야함 - 2-6에서 메시다룰때 다시보자
+	x파일에는 재질정보 있으니 사용안해도 될듯?
+	*/
+
 
 	//방향성 광원 설정
 	D3DXVECTOR3 vecDir;													//빛의 방향
@@ -203,7 +190,7 @@ VOID SetupLights()
 	g_pd3dDevice->LightEnable(0, TRUE);									//0번 광원 사용
 	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);					//광원설정 ON
 
-	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);			//환경광 설정
+	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xaaaaaaaa);			//환경광 설정
 }
 
 
@@ -220,28 +207,27 @@ VOID Render()
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 
 		D3DCOLOR_XRGB(0, 0, 128), 1.0f, 0);			//화면 한 색으로 초기화
 
-	//SetupLights();
+	SetupLights();
 	SetupMatrices();																		//월드, 뷰, 프로젝션 행렬 설정
 
 
 	// Begin the scene
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))													//폴리곤 그린다고 알리기
 	{
-		//정점 버퍼의 삼각형 그리기
-
-		//1. 정점정보가 담겨있는 정점 버퍼를 출력 스트림으로 할당
-		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-
-		//2. D3D에게 정점 셰이더 정보를 지정, 대부분의 경우에는 FVF만 지정
-		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-
-		//3. 인덱스 버퍼 지정
-		g_pd3dDevice->SetIndices(g_pIB);
-
-		//4. DrawIndexedPrimitive() 호출
-		g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
-
-		g_pd3dDevice->EndScene();														//폴리곤 다 그림
+		/*
+		메시를 그리기 직전에 그 메시에 해당하는 텍스처와 재질을 적용한다.
+		*/
+		for (DWORD i = 0; i < g_dwNumMaterials; i++)
+		{
+			//부분집합 메시의 재질과 텍스쳐 설정
+			g_pd3dDevice->SetMaterial(&g_pMeshMaterials[i]);		
+			g_pd3dDevice->SetTexture(0, g_pMeshTextures[i]);		
+			
+			//부분집합 메시 출력
+			g_pMesh->DrawSubset(i);
+		}
+		// End the scene
+		g_pd3dDevice->EndScene();																	//폴리곤 다 그림
 	}
 
 	// Present the backbuffer contents to the display
@@ -289,14 +275,14 @@ INT WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, INT)
 
 	// Create the application's window
 	HWND hWnd = CreateWindow(L"D3D Tutorial", L"D3D Tutorial 01: CreateDevice",
-		WS_OVERLAPPEDWINDOW, 100, 100, 500, 500,
+		WS_OVERLAPPEDWINDOW, 100, 100, 400, 400,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	// Initialize Direct3D
 	if (SUCCEEDED(InitD3D(hWnd)))
 	{
 		//정점 버퍼 초기화
-		if (SUCCEEDED(InitVB()) && SUCCEEDED(InitIB()))
+		if (SUCCEEDED(InitGeometry()))
 		{
 			// Show the window 윈도우 출력
 			ShowWindow(hWnd, SW_SHOWDEFAULT);
