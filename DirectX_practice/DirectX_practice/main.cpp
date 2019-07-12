@@ -35,12 +35,12 @@ INT WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, INT)
 	{
 		sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 		GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
-		L"D3D Tutorial", NULL
+		L"D3D", NULL
 	};
 	RegisterClassEx(&wc);
 
 
-	HWND hWnd = CreateWindow(L"D3D Tutorial", L"D3D Tutorial 03: Matrices",
+	HWND hWnd = CreateWindow(L"D3D", L"DirectX Practice",
 		WS_OVERLAPPEDWINDOW, 100, 100, 500, 500,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
