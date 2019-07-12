@@ -185,6 +185,8 @@ HRESULT InitMaterial(int n)
 	}
 	g_pd3dDevice->SetMaterial(&mtrl);
 
+
+
 	return TRUE;
 }
 
@@ -243,8 +245,8 @@ VOID Render()
 		matWorld = rotation * translation;
 		g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
 		g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 3, 0, 1);
-
-
+		
+		
 		//1¹ø »ï°¢Çü
 		InitMaterial(1);
 		D3DXMatrixRotationY(&rotation, fAngle);
