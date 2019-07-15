@@ -25,9 +25,9 @@ ObjXFile::~ObjXFile()
 
 void ObjXFile::DrawObj(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
-	D3DXMatrixScaling(&scale, 70, 70, 70);
-	matWorld = scale;
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	D3DXMatrixScaling(&_scale, 70, 70, 70);
+	_matWorld = _scale;
+	g_pd3dDevice->SetTransform(D3DTS_WORLD, &_matWorld);
 
 	for (DWORD i = 0; i < g_dwNumMaterials; i++)
 	{
@@ -38,8 +38,9 @@ void ObjXFile::DrawObj(LPDIRECT3DDEVICE9 g_pd3dDevice)
 		//부분집합 메시 출력
 		g_pMesh->DrawSubset(i);
 	}
+	g_pd3dDevice->SetTexture(0, NULL);
 }
-HRESULT ObjXFile::Create(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3 center)
+HRESULT ObjXFile::Create(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
 	//재질 임시 보관 버퍼
 	LPD3DXBUFFER pD3DXMtrlBuffer;
@@ -76,7 +77,7 @@ HRESULT ObjXFile::Create(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3 center)
 			}
 		}
 	}
-
+	
 	//임시생성 재질버퍼 해제
 	pD3DXMtrlBuffer->Release();
 

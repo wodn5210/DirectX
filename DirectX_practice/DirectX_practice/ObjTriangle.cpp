@@ -15,14 +15,14 @@ ObjTriangle::~ObjTriangle()
 		g_pVB->Release();
 }
 
-HRESULT ObjTriangle::Create(LPDIRECT3DDEVICE9 _pd3dDevice, D3DXVECTOR3 center)
+HRESULT ObjTriangle::Create(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
 
-	if (FAILED(InitVB(_pd3dDevice, center)))
+	if (FAILED(InitVB(g_pd3dDevice)))
 	{
 		return E_FAIL;
 	}
-	if (FAILED(InitIB(_pd3dDevice)))
+	if (FAILED(InitIB(g_pd3dDevice)))
 	{
 		return E_FAIL;
 	}
@@ -41,35 +41,40 @@ void ObjTriangle::DrawObj(LPDIRECT3DDEVICE9 g_pd3dDevice)
 	g_pd3dDevice->SetFVF(_fvf);
 	g_pd3dDevice->SetIndices(g_pIB);
 
-	//0¹ø »ï°¢Çü
+	////0¹ø »ï°¢Çü
+	//InitMtrl(g_pd3dDevice);
+	//D3DXMatrixRotationX(&_rotation, fAngle);
+	//D3DXMatrixScaling(&_scale, 30, 30, 30);
+	//D3DXMatrixTranslation(&_translation, -40, -40, -40);
+	//_matWorld = _rotation * _translation * _scale;
 	InitMtrl(g_pd3dDevice);
-	D3DXMatrixRotationX(&rotation, fAngle);
-	D3DXMatrixTranslation(&translation, -40, -40, -40);
-	matWorld = rotation * translation;
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	D3DXMatrixRotationY(&_rotation, fAngle);
+	_matWorld = _rotation * _scale * _translation;
+	g_pd3dDevice->SetTransform(D3DTS_WORLD, &_matWorld);
 	g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 3, 0, 1);
 }
 
-HRESULT ObjTriangle::InitMtrl(LPDIRECT3DDEVICE9 _pd3dDevice)
+HRESULT ObjTriangle::InitMtrl(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
 	D3DMATERIAL9 mtrl;
 	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
 
-	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
-	mtrl.Diffuse.b = mtrl.Ambient.b = 0.0f;
-	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
-	_pd3dDevice->SetMaterial(&mtrl);
+	mtrl.Diffuse.r = mtrl.Ambient.r = _material.r;
+	mtrl.Diffuse.g = mtrl.Ambient.g = _material.g;
+	mtrl.Diffuse.b = mtrl.Ambient.b = _material.b;
+	mtrl.Diffuse.a = mtrl.Ambient.a = _material.a;
+
+	g_pd3dDevice->SetMaterial(&mtrl);
 	return S_OK;
 }
 
-HRESULT ObjTriangle::InitVB(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3 center)
+HRESULT ObjTriangle::InitVB(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
 	CUSTOMVERTEX g_Vertices[] =
 	{
-		{  D3DXVECTOR3(center.x + 0.0f, center.y + 42.0f, center.z + 0.0f),		D3DXVECTOR3(0.0f, 50.0f, 0.0f), },	//Ã¹¹øÂ° »ï°¢Çü
-		{  D3DXVECTOR3(center.x - 25.0f, center.y + 0.0f, center.z + 0.0f),	D3DXVECTOR3(0, 0.33f, 0), },
-		{  D3DXVECTOR3(center.x + 25.0f, center.y + 0.0f, center.z + 0.0f),		D3DXVECTOR3(0, 0, 0.33f), },
+		{  D3DXVECTOR3( 0.0f,  1.7f,  0.0f),		D3DXVECTOR3(0.0f, 50.0f, 0.0f), },	//Ã¹¹øÂ° »ï°¢Çü
+		{  D3DXVECTOR3( 1.0f,  0.0f,  0.0f),	D3DXVECTOR3(0, 0.33f, 0), },
+		{  D3DXVECTOR3( -1.0f,  0.0f,  0.0f),		D3DXVECTOR3(0, 0, 0.33f), },
 
 
 	};

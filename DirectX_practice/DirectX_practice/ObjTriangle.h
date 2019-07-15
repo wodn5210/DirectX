@@ -14,12 +14,12 @@ public:
 	ObjTriangle();
 	~ObjTriangle();
 	
-	void DrawObj(LPDIRECT3DDEVICE9 _pd3dDevice);
-	HRESULT Create(LPDIRECT3DDEVICE9 _pd3dDevice, D3DXVECTOR3 center = { 0, 0, 0 });
+	void DrawObj(LPDIRECT3DDEVICE9 g_pd3dDevice);
+	HRESULT Create(LPDIRECT3DDEVICE9 g_pd3dDevice);
 
-	HRESULT InitVB(LPDIRECT3DDEVICE9 _pd3dDevice, D3DXVECTOR3 center = { 0, 0, 0 });
-	HRESULT InitIB(LPDIRECT3DDEVICE9 _pd3dDevice);
-	HRESULT InitMtrl(LPDIRECT3DDEVICE9 _pd3dDevice);
+	HRESULT InitVB(LPDIRECT3DDEVICE9 g_pd3dDevice);
+	HRESULT InitIB(LPDIRECT3DDEVICE9 g_pd3dDevice);
+	HRESULT InitMtrl(LPDIRECT3DDEVICE9 g_pd3dDevice);
 
 
 

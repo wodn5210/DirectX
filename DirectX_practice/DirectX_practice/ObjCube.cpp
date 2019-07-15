@@ -22,16 +22,15 @@ void ObjCube::DrawObj(LPDIRECT3DDEVICE9 g_pd3dDevice)
 	g_pd3dDevice->SetFVF(_fvf);
 	g_pd3dDevice->SetIndices(g_pIB);
 
-	//큐브 그리기
 	InitMtrl(g_pd3dDevice);
-	D3DXMatrixRotationY(&rotation, fAngle);
-	matWorld = rotation;
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	D3DXMatrixRotationY(&_rotation, fAngle);
+	_matWorld = _rotation * _scale* _translation;
+	g_pd3dDevice->SetTransform(D3DTS_WORLD, &_matWorld);
 	g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
 }
-HRESULT ObjCube::Create(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3 center)
+HRESULT ObjCube::Create(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
-	if (FAILED(InitVB(g_pd3dDevice, center)))
+	if (FAILED(InitVB(g_pd3dDevice)))
 	{
 		return E_FAIL;
 	}
@@ -43,20 +42,20 @@ HRESULT ObjCube::Create(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3 center)
 	return S_OK;
 }
 
-HRESULT ObjCube::InitVB(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3 center)
+HRESULT ObjCube::InitVB(LPDIRECT3DDEVICE9 g_pd3dDevice)
 {
 	CUSTOMVERTEX g_Vertices[] =
 	{
 		//큐브 만들기 위한 삼각형들
-			{	D3DXVECTOR3(center.x -  20, center.y +  20, center.z +  20),			D3DXVECTOR3(0, 1, 0)},		//v0
-			{	D3DXVECTOR3(center.x +  20, center.y +  20, center.z +  20),			D3DXVECTOR3(0, 1, 0)},		//v1
-			{	D3DXVECTOR3(center.x +  20, center.y +  20, center.z -  20),			D3DXVECTOR3(1, 0, 0)},		//v2
-			{	D3DXVECTOR3(center.x -  20, center.y +  20, center.z -  20),		D3DXVECTOR3(1, 0, 0)},	//v3
+			{	D3DXVECTOR3(-1,  1,  1),			D3DXVECTOR3(0, 1, 0)},		//v0
+			{	D3DXVECTOR3( 1,  1,  1),			D3DXVECTOR3(0, 1, 0)},		//v1
+			{	D3DXVECTOR3( 1,  1, -1),			D3DXVECTOR3(1, 0, 0)},		//v2
+			{	D3DXVECTOR3(-1,  1, -1),		D3DXVECTOR3(1, 0, 0)},	//v3
 
-			{	D3DXVECTOR3(center.x -  20, center.y -  20, center.z +  20),		D3DXVECTOR3(0, -1, 0)},	//v4
-			{	D3DXVECTOR3(center.x +  20, center.y -  20, center.z +  20),			D3DXVECTOR3(0, -1, 0)},		//v5
-			{	D3DXVECTOR3(center.x +  20, center.y -  20, center.z -  20),			D3DXVECTOR3(1, 0, 1)},	//v6
-			{	D3DXVECTOR3(center.x -  20, center.y -  20, center.z -  20),		D3DXVECTOR3(0, 0, 1)},	//v7
+			{	D3DXVECTOR3(-1, -1,  1),		D3DXVECTOR3(0, -1, 0)},	//v4
+			{	D3DXVECTOR3( 1, -1,  1),			D3DXVECTOR3(0, -1, 0)},		//v5
+			{	D3DXVECTOR3( 1, -1, -1),			D3DXVECTOR3(1, 0, 1)},	//v6
+			{	D3DXVECTOR3(-1, -1, -1),		D3DXVECTOR3(0, 0, 1)},	//v7
 	};
 
 	if (FAILED(g_pd3dDevice->CreateVertexBuffer(8 * sizeof(CUSTOMVERTEX),
@@ -108,10 +107,10 @@ HRESULT ObjCube::InitMtrl(LPDIRECT3DDEVICE9 g_pd3dDevice)
 	D3DMATERIAL9 mtrl;
 	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
 
-	mtrl.Diffuse.r = mtrl.Ambient.r = 0.0f;
-	mtrl.Diffuse.g = mtrl.Ambient.g = 0.0f;
-	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
-	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
+	mtrl.Diffuse.r = mtrl.Ambient.r = _material.r;
+	mtrl.Diffuse.g = mtrl.Ambient.g = _material.g;
+	mtrl.Diffuse.b = mtrl.Ambient.b = _material.b;
+	mtrl.Diffuse.a = mtrl.Ambient.a = _material.a;
 	g_pd3dDevice->SetMaterial(&mtrl);
 	return S_OK;
 }

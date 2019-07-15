@@ -47,18 +47,42 @@ HRESULT Engine::InitD3D(HWND hWnd)
 
 HRESULT Engine::InitObj()
 {
+	testTiger.Create(g_pd3dDevice);
 	for (int i = 0; i < 5; i++) 
 	{
-		if (FAILED(test[i].Create(g_pd3dDevice, D3DXVECTOR3(i*50, 0, 0))))
+		if (FAILED(test[i].Create(g_pd3dDevice)))
+		{	
+			return E_FAIL;
+		}
+		else
+		{
+
+			D3DCOLORVALUE material = { 0, (i * 50) / 255.f, 0, 1 };
+			test[i].SetMaterial(material);
+
+			D3DXMATRIXA16 t, s;
+			D3DXMatrixScaling(&s, 30.f, 30.f, 30.f);
+			test[i].SetScale(s);
+			D3DXMatrixTranslation(&t, 130 - i * 60, 80, -70);
+			test[i].SetTranslation(t);
+		}
+		if (FAILED(testCube[i].Create(g_pd3dDevice)))
 		{
 			return E_FAIL;
 		}
-		if (FAILED(testCube[i].Create(g_pd3dDevice, D3DXVECTOR3(i * 50, 20, 0))))
+		else
 		{
-			return E_FAIL;
+			D3DCOLORVALUE material = { (i * 50) / 255.f, 0, 0, 1 };
+			testCube[i].SetMaterial(material);
+
+			D3DXMATRIXA16 t, s;
+			D3DXMatrixScaling(&s, 30.f, 30.f, 30.f);
+			testCube[i].SetScale(s);
+			D3DXMatrixTranslation(&t, 160- i * 80, -80, -70);
+			testCube[i].SetTranslation(t);
 		}
 	}
-	testTiger.Create(g_pd3dDevice);
+	
 
 	return S_OK;
 }
