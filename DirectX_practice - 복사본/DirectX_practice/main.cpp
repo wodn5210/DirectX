@@ -11,7 +11,6 @@
 Engine engine;
 
 
-//이벤트 함수
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -48,26 +47,27 @@ INT WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, INT)
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 
-	//D3D와 Obj들 초기화한다
-	if (SUCCEEDED(engine.InitD3D(hWnd)) && SUCCEEDED(engine.InitObj()))
+	if (SUCCEEDED(engine.InitD3D(hWnd)))
 	{
-		ShowWindow(hWnd, SW_SHOWDEFAULT);
-		UpdateWindow(hWnd);
-
-		MSG msg;
-		ZeroMemory(&msg, sizeof(msg));
-		while (msg.message != WM_QUIT)
+		if (SUCCEEDED(engine.InitVB()) && SUCCEEDED(engine.InitIB()))
 		{
-			if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			else
-				//렌더링
-				engine.Render();
-		}
 
+			ShowWindow(hWnd, SW_SHOWDEFAULT);
+			UpdateWindow(hWnd);
+
+			MSG msg;
+			ZeroMemory(&msg, sizeof(msg));
+			while (msg.message != WM_QUIT)
+			{
+				if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
+				{
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+				else
+					engine.Render();
+			}
+		}
 	}
 
 	UnregisterClass(L"D3D Tutorial", wc.hInstance);

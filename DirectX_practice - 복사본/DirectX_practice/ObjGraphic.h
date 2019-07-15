@@ -1,6 +1,5 @@
 #pragma once
 #include <d3dx9.h>
-#pragma warning( disable : 4996 ) 
 #include <vector>
 
 using namespace std;
@@ -26,7 +25,7 @@ protected:
 	D3DXMATRIXA16 matWorld, translation, rotation, scale;
 
 public:
-	virtual void DrawObj(LPDIRECT3DDEVICE9 _pd3dDevice) = 0;
-	virtual HRESULT Create(LPDIRECT3DDEVICE9 _pd3dDevice, 
+	virtual void drawObj(LPDIRECT3DDEVICE9 _pd3dDevice) = 0;
+	virtual HRESULT create(LPDIRECT3DDEVICE9 _pd3dDevice, 
 		D3DXVECTOR3 center = { 0, 0, 0 }) = 0;
 };

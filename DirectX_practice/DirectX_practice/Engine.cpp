@@ -1,18 +1,25 @@
 #include "Engine.h"
 
-// A structure for our custom vertex type
-struct CUSTOMVERTEX
-{
-	FLOAT x, y, z, rhw; // The transformed position for the vertex
-	DWORD color;        // The vertex color
-};
 
-// Our custom FVF, which describes our custom vertex structure
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE)
+
+Engine::Engine()
+{
+	eye.x = 100.0f;
+	eye.y = 250.0f;
+	eye.z = -400.0f;
+}
+Engine::~Engine()
+{
+	if (g_pd3dDevice != NULL)
+		g_pd3dDevice->Release();
+
+	if (g_pD3D != NULL)
+		g_pD3D->Release();
+}
 
 HRESULT Engine::InitD3D(HWND hWnd)
 {
-	if (NULL == (_pD3D = Direct3DCreate9(D3D_SDK_VERSION)))
+	if (NULL == (g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)))
 		return E_FAIL;
 
 	D3DPRESENT_PARAMETERS d3dpp;
@@ -25,17 +32,37 @@ HRESULT Engine::InitD3D(HWND hWnd)
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
 
-	if (FAILED(_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &_pd3dDevice)))
+	if (FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+		&d3dpp, &g_pd3dDevice)))
 	{
 		return E_FAIL;
 	}
-	_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+
 	
 	return S_OK;
 }
+
+HRESULT Engine::InitObj()
+{
+	for (int i = 0; i < 5; i++) 
+	{
+		if (FAILED(test[i].Create(g_pd3dDevice, D3DXVECTOR3(i*50, 0, 0))))
+		{
+			return E_FAIL;
+		}
+		if (FAILED(testCube[i].Create(g_pd3dDevice, D3DXVECTOR3(i * 50, 20, 0))))
+		{
+			return E_FAIL;
+		}
+	}
+	testTiger.Create(g_pd3dDevice);
+
+	return S_OK;
+}
+
 
 VOID Engine::Render()
 {
@@ -43,69 +70,61 @@ VOID Engine::Render()
 	UINT iTime = timeGetTime() % 1000;
 	FLOAT fAngle = iTime * (2.0f * D3DX_PI) / 1000.0f;
 
-	_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
 		D3DCOLOR_XRGB(128, 128, 128), 1.0f, 0);
 
-	_InitLight();
-	_SetupMatrices();
+	InitLight();
+	InitView();
 
 
-	if (SUCCEEDED(_pd3dDevice->BeginScene()))
+	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
-		_pd3dDevice->SetStreamSource(0, _pVB, 0, sizeof(CUSTOMVERTEX));
-		_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-		_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
+		testTiger.DrawObj(g_pd3dDevice);
+		for (int i = 0; i < 5; i++)
+		{
+			test[i].DrawObj(g_pd3dDevice);
+			testCube[i].DrawObj(g_pd3dDevice);
+		}
+		
 		// End the scene
-		_pd3dDevice->EndScene();
+		g_pd3dDevice->EndScene();
 	}
 
 	// Present the backbuffer contents to the display
-	_pd3dDevice->Present(NULL, NULL, NULL, NULL);									//화면에 나타내기 (후면버퍼의 내용을 전면버퍼로 전송)
+	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
 
-HRESULT Engine::_InitGeometry()
+VOID Engine::InitLight()
 {
-	return S_OK;
-}
-HRESULT Engine::InitVB()
-{
-	CUSTOMVERTEX vertices[] =
-	{
-		{ 150.0f,  50.0f, 0.5f, 1.0f, 0xffff0000, }, // x, y, z, rhw, color
-		{ 250.0f, 250.0f, 0.5f, 1.0f, 0xff00ff00, },
-		{  50.0f, 250.0f, 0.5f, 1.0f, 0xff00ffff, },
-	};
+	D3DXVECTOR3 vecDir = D3DXVECTOR3(1, 1, 1);
+	D3DLIGHT9 light;
+	ZeroMemory(&light, sizeof(D3DLIGHT9));
+	light.Type = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse.r = 0.5f;
+	light.Diffuse.g = 0.5f;
+	light.Diffuse.b = 0.5f;
+	D3DXVec3Normalize((D3DXVECTOR3*)& light.Direction, &vecDir);
+	light.Range = 1000.0f;
 
-	// Create the vertex buffer. Here we are allocating enough memory
-	// (from the default pool) to hold all our 3 custom vertices. We also
-	// specify the FVF, so the vertex buffer knows what data it contains.
-	if (FAILED(_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-		0, D3DFVF_CUSTOMVERTEX,				//정점버퍼 종류(SW, HW), 정점 구조체에 따른 FVF플래그
-		D3DPOOL_DEFAULT, &_pVB, NULL)))	//정점버퍼가 저장될 메모리 위치, 반환 인터페이스
-	{
-		return E_FAIL;
-	}
 
-	// Now we fill the vertex buffer. To do this, we need to Lock() the VB to
-	// gain access to the vertices. This mechanism is required becuase vertex
-	// buffers may be in device memory.
-	VOID* pVertices;																	//정점버퍼는 기본적으로 쓰레기값이라 초기화해야함
-	if (FAILED(_pVB->Lock(0, sizeof(vertices), (void**)& pVertices, 0)))		//Lock을 이용해서 메모리 포인터 가져오기
-		return E_FAIL;																	//
-	memcpy(pVertices, vertices, sizeof(vertices));
-	_pVB->Unlock();
-	return S_OK;
-}
+	g_pd3dDevice->SetLight(0, &light);
+	g_pd3dDevice->LightEnable(0, TRUE);
+	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 
-HRESULT Engine::InitIB()
-{
-	return S_OK;
-}
-VOID Engine::_SetupMatrices()
-{
+	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
 
 }
-HRESULT Engine::_InitLight()
+
+VOID Engine::InitView()
 {
-	return S_OK;
+	D3DXVECTOR3 vEyePt(eye.x, eye.y, eye.z);
+	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+	D3DXMATRIXA16 matView;
+	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
+	g_pd3dDevice->SetTransform(D3DTS_VIEW, &matView);
+
+	D3DXMATRIXA16 matProj;
+	D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 1.0f, 1.0f, 1000.0f);
+	g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 }

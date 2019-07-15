@@ -24,12 +24,6 @@
     <ClCompile Include="ObjTriangle.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ObjCube.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjXFile.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -39,12 +33,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ObjTriangle.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjCube.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjXFile.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
