@@ -3,6 +3,8 @@
 
 class Camera
 {
+	LPDIRECT3DDEVICE9 g_pd3dDevice;
+
 	D3DXVECTOR3		m_vEye;			
 	D3DXVECTOR3		m_vLookat;		
 	D3DXVECTOR3		m_vUp;			
@@ -11,10 +13,12 @@ class Camera
 	D3DXVECTOR3		m_vCross;		
 
 	D3DXMATRIXA16	m_matView;		
-	D3DXMATRIXA16	m_matBill;		
+	D3DXMATRIXA16	m_matBill;
+	D3DXMATRIXA16	m_matProj;
 
 public:
-	Camera();
+	
+	Camera(LPDIRECT3DDEVICE9 _pd3dDevice = NULL);
 
 	D3DXMATRIXA16*	SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVECTOR3* pvUp);
 	void			SetEye(D3DXVECTOR3* pv) { m_vEye = *pv; }

@@ -11,7 +11,14 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
-
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			PostMessage(hWnd, WM_DESTROY, 0, 0L);
+			break;
+		}
+		break;
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
