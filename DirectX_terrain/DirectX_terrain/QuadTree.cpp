@@ -220,7 +220,7 @@ BOOL QuadTree::Create(TERRAIN_VTX* pHeightMap)
 {	// 쿼드트리 구축
 	_BuildQuadTree(pHeightMap);
 	// 이웃노드 구축
-	_BuildNeighborNode(this, pHeightMap, m_nCorner[CORNER_TR] + 1);
+	_BuildNeighborNode(this, pHeightMap);
 
 	return TRUE;
 }
@@ -302,7 +302,7 @@ int QuadTree::_IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum)
 
 
 // 이웃노드를 만든다.(삼각형 찢어짐 방지용)
-void QuadTree::_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap, int cx)
+void QuadTree::_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap)
 {
 	int				n;
 	int				_0, _1, _2, _3;
@@ -322,10 +322,10 @@ void QuadTree::_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap, int 
 	// 자식노드로 재귀호출
 	if (m_pChild[0])
 	{
-		m_pChild[0]->_BuildNeighborNode(pRoot, pHeightMap, cx);
-		m_pChild[1]->_BuildNeighborNode(pRoot, pHeightMap, cx);
-		m_pChild[2]->_BuildNeighborNode(pRoot, pHeightMap, cx);
-		m_pChild[3]->_BuildNeighborNode(pRoot, pHeightMap, cx);
+		m_pChild[0]->_BuildNeighborNode(pRoot, pHeightMap);
+		m_pChild[1]->_BuildNeighborNode(pRoot, pHeightMap);
+		m_pChild[2]->_BuildNeighborNode(pRoot, pHeightMap);
+		m_pChild[3]->_BuildNeighborNode(pRoot, pHeightMap);
 	}
 }
 
@@ -422,11 +422,12 @@ int	QuadTree::_GetNodeIndex(int ed, int& _0, int& _1, int& _2, int& _3)
 
 	float n = (_0 + _1 + _2 + _3) / 4.0f;	// 가운데 인덱스
 
-	//맵 벗어나는거면 취소함
-	if (!MATH::IsInRange(n, 0, m_x * m_y - 1) )
+	//맵 벗어나는거나 유효숫자 아니면
+	if (!MATH::IsInRange(n, 0, m_x * m_y - 1) || (n - (int)n != 0))
 		return -1;
 
-	return n;
+
+	return (int)n;
 }
 
 // 쿼드트리를 만든다.(Build()함수에서 불린다)

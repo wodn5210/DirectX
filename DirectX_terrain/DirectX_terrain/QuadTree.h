@@ -59,7 +59,7 @@ private:
 	int _IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum);
 
 	// 이웃노드를 만든다.(삼각형 찢어짐 방지용)
-	void		_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap, int cx);
+	void		_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap);
 	// 쿼드트리를 검색해서 4개 코너값과 일치하는 노드를 찾는다.
 	QuadTree* _FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3);
 	// 4개 방향(상단,하단,좌측,우측)의 이웃노드 인덱스를 구한다.
