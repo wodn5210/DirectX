@@ -7,6 +7,9 @@ QuadTree::QuadTree(int cx, int cy)
 	int		i;
 	m_pParent = NULL;
 	m_nCenter = 0;
+	m_x = cx;
+	m_y = cy;
+
 	for (i = 0; i < 4; i++)
 	{
 		m_pChild[i] = NULL;
@@ -113,17 +116,92 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	{
 		unsigned short* p = ((unsigned short*)pIndex) + nTris * 3;
 
+		// 만약 최하위 노드라면 부분분할(subdivide)이 불가능하므로 그냥 출력하고 리턴한다.
+		if (m_nCorner[CORNER_TR] - m_nCorner[CORNER_TL] <= 1)
+		{
+			*p++ = m_nCorner[0];
+			*p++ = m_nCorner[1];
+			*p++ = m_nCorner[2];
+			nTris++;
+			*p++ = m_nCorner[2];
+			*p++ = m_nCorner[1];
+			*p++ = m_nCorner[3];
+			nTris++;
+			return nTris;
+		}
 
-		*p++ = m_nCorner[0];
-		*p++ = m_nCorner[1];
-		*p++ = m_nCorner[2];
-		nTris++;
-		*p++ = m_nCorner[2];
-		*p++ = m_nCorner[1];
-		*p++ = m_nCorner[3];
-		nTris++;
+		BOOL	b[4];
+		// 상단 이웃노드(neightbor node)가 출력가능한가?
+		if (m_pNeighbor[EDGE_UP]) b[EDGE_UP] = m_pNeighbor[EDGE_UP]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		// 하단 이웃노드(neightbor node)가 출력가능한가?
+		if (m_pNeighbor[EDGE_DN]) b[EDGE_DN] = m_pNeighbor[EDGE_DN]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		// 좌측 이웃노드(neightbor node)가 출력가능한가?
+		if (m_pNeighbor[EDGE_LT]) b[EDGE_LT] = m_pNeighbor[EDGE_LT]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		// 우측 이웃노드(neightbor node)가 출력가능한가?
+		if (m_pNeighbor[EDGE_RT]) b[EDGE_RT] = m_pNeighbor[EDGE_RT]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
 
-		return nTris;
+		// 이웃노드들이 모두다 출력가능하다면 현재노드와 이웃노드들이 같은 LOD이므로 
+		// 부분분할이 필요없다.
+		if (b[EDGE_UP] && b[EDGE_DN] && b[EDGE_LT] && b[EDGE_RT])
+		{
+			*p++ = m_nCorner[0];
+			*p++ = m_nCorner[1];
+			*p++ = m_nCorner[2];
+			nTris++;
+			*p++ = m_nCorner[2];
+			*p++ = m_nCorner[1];
+			*p++ = m_nCorner[3];
+			nTris++;
+			return nTris;
+		}
+
+		int		n;
+
+		if (!b[EDGE_UP]) // 상단 부분분할이 필요한가?
+		{
+			n = (m_nCorner[CORNER_TL] + m_nCorner[CORNER_TR]) / 2;
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TL]; *p++ = n; nTris++;
+			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_TR]; nTris++;
+		}
+		else	// 상단 부분분할이 필요없을 경우
+		{
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TL]; *p++ = m_nCorner[CORNER_TR]; nTris++;
+		}
+
+		if (!b[EDGE_DN]) // 하단 부분분할이 필요한가?
+		{
+			n = (m_nCorner[CORNER_BL] + m_nCorner[CORNER_BR]) / 2;
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BR]; *p++ = n; nTris++;
+			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_BL]; nTris++;
+		}
+		else	// 하단 부분분할이 필요없을 경우
+		{
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BR]; *p++ = m_nCorner[CORNER_BL]; nTris++;
+		}
+
+		if (!b[EDGE_LT]) // 좌측 부분분할이 필요한가?
+		{
+			n = (m_nCorner[CORNER_TL] + m_nCorner[CORNER_BL]) / 2;
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BL]; *p++ = n; nTris++;
+			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_TL]; nTris++;
+		}
+		else	// 좌측 부분분할이 필요없을 경우
+		{
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BL]; *p++ = m_nCorner[CORNER_TL]; nTris++;
+		}
+
+		if (!b[EDGE_RT]) // 우측 부분분할이 필요한가?
+		{
+			n = (m_nCorner[CORNER_TR] + m_nCorner[CORNER_BR]) / 2;
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TR]; *p++ = n; nTris++;
+			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_BR]; nTris++;
+		}
+		else	// 우측 부분분할이 필요없을 경우
+		{
+			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TR]; *p++ = m_nCorner[CORNER_BR]; nTris++;
+		}
+
+		return nTris;	// 이 노드 아래의 자식노드는 탐색할 필요없으므로 리턴!
 	}
 
 
@@ -139,7 +217,7 @@ BOOL QuadTree::Create(TERRAIN_VTX* pHeightMap)
 {	// 쿼드트리 구축
 	_BuildQuadTree(pHeightMap);
 	// 이웃노드 구축
-	//_BuildNeighborNode(this, pHeightMap, m_nCorner[CORNER_TR] + 1);
+	_BuildNeighborNode(this, pHeightMap, m_nCorner[CORNER_TR] + 1);
 
 	return TRUE;
 }
@@ -314,16 +392,16 @@ int	QuadTree::_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3)
 	switch (ed)
 	{
 	case EDGE_UP:	// 위쪽 방향 이웃노드의 인덱스
-		_0 = _a - cx * gap;
-		_1 = _b - cx * gap;
+		_0 = _a - 129 * gap;
+		_1 = _b - 129 * gap;
 		_2 = _a;
 		_3 = _b;
 		break;
 	case EDGE_DN:	// 아래 방향 이웃노드의 인덱스
 		_0 = _c;
 		_1 = _d;
-		_2 = _c + cx * gap;
-		_3 = _d + cx * gap;
+		_2 = _c + 129 * gap;
+		_3 = _d + 129 * gap;
 		break;
 	case EDGE_LT:	// 좌측 방향 이웃노드의 인덱스
 		_0 = _a - gap;
@@ -340,7 +418,7 @@ int	QuadTree::_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3)
 	}
 
 	float n = (_0 + _1 + _2 + _3) / 4.0f;	// 가운데 인덱스
-	if (!MATH::IsInRange(n, 0, cx * cx - 1))
+	if (!MATH::IsInRange(n, 0, 129 * 129 - 1) )
 		return -1;
 
 	return n;

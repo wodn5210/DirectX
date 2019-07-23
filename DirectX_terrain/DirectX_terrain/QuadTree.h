@@ -20,6 +20,7 @@ class QuadTree
 	enum { EDGE_UP, EDGE_DN, EDGE_LT, EDGE_RT };
 
 private:
+	int m_x, m_y;
 	QuadTree* m_pChild[4];
 	QuadTree* m_pNeighbor[4];
 	QuadTree* m_pParent;
@@ -35,6 +36,10 @@ public:
 	QuadTree(int cx, int cy);
 	QuadTree(QuadTree* pParent);
 	~QuadTree();
+
+	int GetX() { return m_x; }
+	int GetY() { return m_y; }
+
 
 	BOOL Create(TERRAIN_VTX* pHeightMap);
 	int GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio);

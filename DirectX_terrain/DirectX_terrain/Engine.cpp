@@ -59,8 +59,8 @@ HRESULT Engine::InitView()
 	g_pCamera = new Camera(g_pd3dDevice);
 
 	// 뷰 행렬을 설정
-	//D3DXVECTOR3 vEyePt(0.0f, 100.f, -70.0f);
-	D3DXVECTOR3 vEyePt(0.0f, 5.0f, -3.0f);
+	D3DXVECTOR3 vEyePt(0.0f, 100.f, -70.0f);
+	//D3DXVECTOR3 vEyePt(0.0f, 5.0f, -3.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 5.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	g_pCamera->SetView(&vEyePt, &vLookatPt, &vUpVec);
