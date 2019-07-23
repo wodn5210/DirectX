@@ -31,6 +31,9 @@ QuadTree::QuadTree(QuadTree* pParent)
 	int		i;
 	m_pParent = pParent;
 	m_nCenter = 0;
+	m_x = m_pParent->GetX();
+	m_y = m_pParent->GetY();
+
 	for (i = 0; i < 4; i++)
 	{
 		m_pChild[i] = NULL;
@@ -311,7 +314,7 @@ void QuadTree::_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap, int 
 		_2 = m_nCorner[2];
 		_3 = m_nCorner[3];
 		// 이웃노드의 4개 코너값을 얻는다.
-		n = _GetNodeIndex(i, cx, _0, _1, _2, _3);
+		n = _GetNodeIndex(i, _0, _1, _2, _3);
 		// 코너값으로 이웃노드의 포인터를 얻어온다.
 		if (n >= 0) m_pNeighbor[i] = pRoot->_FindNode(pHeightMap, _0, _1, _2, _3);
 	}
@@ -380,7 +383,7 @@ QuadTree* QuadTree::_FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, i
 }
 
 // 4개 방향(상단,하단,좌측,우측)의 이웃노드 인덱스를 구한다.
-int	QuadTree::_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3)
+int	QuadTree::_GetNodeIndex(int ed, int& _0, int& _1, int& _2, int& _3)
 {
 	int		_a, _b, _c, _d, gap;
 	_a = _0;
@@ -392,16 +395,16 @@ int	QuadTree::_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3)
 	switch (ed)
 	{
 	case EDGE_UP:	// 위쪽 방향 이웃노드의 인덱스
-		_0 = _a - 129 * gap;
-		_1 = _b - 129 * gap;
+		_0 = _a - m_x * gap;
+		_1 = _b - m_x * gap;
 		_2 = _a;
 		_3 = _b;
 		break;
 	case EDGE_DN:	// 아래 방향 이웃노드의 인덱스
 		_0 = _c;
 		_1 = _d;
-		_2 = _c + 129 * gap;
-		_3 = _d + 129 * gap;
+		_2 = _c + m_x * gap;
+		_3 = _d + m_x * gap;
 		break;
 	case EDGE_LT:	// 좌측 방향 이웃노드의 인덱스
 		_0 = _a - gap;
@@ -418,7 +421,9 @@ int	QuadTree::_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3)
 	}
 
 	float n = (_0 + _1 + _2 + _3) / 4.0f;	// 가운데 인덱스
-	if (!MATH::IsInRange(n, 0, 129 * 129 - 1) )
+
+	//맵 벗어나는거면 취소함
+	if (!MATH::IsInRange(n, 0, m_x * m_y - 1) )
 		return -1;
 
 	return n;

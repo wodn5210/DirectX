@@ -63,7 +63,7 @@ private:
 	// 쿼드트리를 검색해서 4개 코너값과 일치하는 노드를 찾는다.
 	QuadTree* _FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3);
 	// 4개 방향(상단,하단,좌측,우측)의 이웃노드 인덱스를 구한다.
-	int			_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3);
+	int			_GetNodeIndex(int ed, int& _0, int& _1, int& _2, int& _3);
 	// 쿼드트리를 만든다.(Build()함수에서 불린다)
 	BOOL		_BuildQuadTree(TERRAIN_VTX* pHeightMap);
 
