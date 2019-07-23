@@ -20,7 +20,10 @@ class QuadTree
 	enum { EDGE_UP, EDGE_DN, EDGE_LT, EDGE_RT };
 
 private:
+
+	//트리 최대 크기
 	int m_x, m_y;
+
 	QuadTree* m_pChild[4];
 	QuadTree* m_pNeighbor[4];
 	QuadTree* m_pParent;

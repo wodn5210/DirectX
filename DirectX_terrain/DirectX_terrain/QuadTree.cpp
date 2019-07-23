@@ -440,10 +440,10 @@ BOOL	QuadTree::_BuildQuadTree(TERRAIN_VTX* pHeightMap)
 		(pHeightMap + m_nCenter)->p;
 
 		m_fRadius = D3DXVec3Length(&v) / 2.0f;
-		m_pChild[CORNER_TL]->Create(pHeightMap);
-		m_pChild[CORNER_TR]->Create(pHeightMap);
-		m_pChild[CORNER_BL]->Create(pHeightMap);
-		m_pChild[CORNER_BR]->Create(pHeightMap);
+		m_pChild[CORNER_TL]->_BuildQuadTree(pHeightMap);
+		m_pChild[CORNER_TR]->_BuildQuadTree(pHeightMap);
+		m_pChild[CORNER_BL]->_BuildQuadTree(pHeightMap);
+		m_pChild[CORNER_BR]->_BuildQuadTree(pHeightMap);
 	}
 	return TRUE;
 }

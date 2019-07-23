@@ -130,6 +130,7 @@ HRESULT Engine::InitObj()
 	g_pFrustum = new Frustum(g_pd3dDevice);
 	vector<string> tex_file_dir;
 	tex_file_dir.push_back("src/tile2.tga");
+	tex_file_dir.push_back("src/lightmap.tga");
 	g_pTerrain = new Terrain;
 	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f, 
 		"src/map129.bmp", tex_file_dir);
