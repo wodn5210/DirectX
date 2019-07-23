@@ -39,9 +39,6 @@
     <ClCompile Include="Dib.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalFunc.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -65,7 +62,7 @@
     <ClInclude Include="Dib.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalFunc.h">
+    <ClInclude Include="define.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

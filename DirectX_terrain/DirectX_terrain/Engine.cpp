@@ -11,7 +11,7 @@ Engine::Engine()
 Engine::~Engine()
 {
 	delete g_pCamera;
-
+	delete g_pFrustum;
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
 
@@ -59,8 +59,9 @@ HRESULT Engine::InitView()
 	g_pCamera = new Camera(g_pd3dDevice);
 
 	// 뷰 행렬을 설정
-	D3DXVECTOR3 vEyePt(0.0f, 3.0f, -5.0f);
-	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+	//D3DXVECTOR3 vEyePt(0.0f, 100.f, -70.0f);
+	D3DXVECTOR3 vEyePt(0.0f, 5.0f, -3.0f);
+	D3DXVECTOR3 vLookatPt(0.0f, 5.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	g_pCamera->SetView(&vEyePt, &vLookatPt, &vUpVec);
 
@@ -75,12 +76,27 @@ HRESULT Engine::InitLight()
 	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
 	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
 	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
-	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
+	mtrl.Diffuse.a = mtrl.Ambient.a = 0.0f;
 	g_pd3dDevice->SetMaterial(&mtrl);
 
+	D3DXVECTOR3 vecDir;									
+	D3DLIGHT9 light;									
+	ZeroMemory(&light, sizeof(D3DLIGHT9));			
+	light.Type = D3DLIGHT_DIRECTIONAL;			
+	light.Diffuse.r = 1.0f;						
+	light.Diffuse.g = 1.0f;
+	light.Diffuse.b = 0.0f;
+	vecDir = D3DXVECTOR3(1, 1, 1);				
+	vecDir = D3DXVECTOR3(cosf(GetTickCount() / 350.0f),
+		1.0f,
+		sinf(GetTickCount() / 350.0f));
+	D3DXVec3Normalize((D3DXVECTOR3*)& light.Direction, &vecDir);	
+	light.Range = 1000.0f;									
+	g_pd3dDevice->SetLight(0, &light);							
+	g_pd3dDevice->LightEnable(0, TRUE);							
 	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);			// 광원설정을 켠다
 
-	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);		// 환경광원(ambient light)의 값 설정
+	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x00909090);		// 환경광원(ambient light)의 값 설정
 
 	return S_OK;
 }
@@ -111,11 +127,14 @@ HRESULT Engine::InitObj()
 
 	//위에껀 테스트
 	//아래께 진짜
+	g_pFrustum = new Frustum(g_pd3dDevice);
 	vector<string> tex_file_dir;
 	tex_file_dir.push_back("src/tile2.tga");
 	g_pTerrain = new Terrain;
 	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f, 
 		"src/map129.bmp", tex_file_dir);
+
+	
 
 
 }
@@ -148,10 +167,28 @@ VOID Engine::_MouseEvent()
 }
 VOID Engine::_KeyEvent()
 {
-	if (GetAsyncKeyState('W')) g_pCamera->MoveLocalZ(0.5f);	// 카메라 전진!
-	if (GetAsyncKeyState('S')) g_pCamera->MoveLocalZ(-0.5f);	// 카메라 후진!
+	if (GetAsyncKeyState('W')) g_pCamera->MoveLocalZ(0.5f);	
+	if (GetAsyncKeyState('S')) g_pCamera->MoveLocalZ(-0.5f);	
 	if (GetAsyncKeyState('A')) g_pCamera->MoveLocalX(-0.5f);
 	if (GetAsyncKeyState('D')) g_pCamera->MoveLocalX(0.5f);
+	if (GetAsyncKeyState('1'))
+	{
+		g_bLockFrustum = FALSE;
+		g_bHideFrustum = TRUE;
+	}
+	if (GetAsyncKeyState('2'))
+	{
+		g_bLockFrustum = TRUE;
+		g_bHideFrustum = FALSE;
+	}
+	if (GetAsyncKeyState('3'))
+	{
+		g_bWireframe = TRUE;
+	}
+	if (GetAsyncKeyState('4'))
+	{
+		g_bWireframe = FALSE;
+	}
 }
 VOID Engine::_SetBillBoard()
 {
@@ -181,6 +218,16 @@ VOID Engine::RenderReady()
 
 	//키보드 이벤트
 	_KeyEvent();
+
+	if (!g_bLockFrustum)
+	{
+		D3DXMATRIXA16	m;
+		D3DXMATRIXA16* pView = g_pCamera->GetViewMatrix();	// 카메라 클래스로부터 행렬정보를 얻는다.
+		D3DXMATRIXA16* pProj = g_pCamera->GetProjMatrix();
+
+		m = (*pView) * (*pProj);				// World좌표를 얻기위해서 View * Proj행렬을 계산한다.
+		g_pFrustum->Make(&m, g_pCamera->GetEye());	// View*Proj행렬로 Frustum을 만든다.
+	}
 }
 
 VOID Engine::Rendering()
@@ -191,6 +238,8 @@ VOID Engine::Rendering()
 
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
 		D3DCOLOR_XRGB(128, 128, 128), 1.0f, 0);
+	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, g_bWireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+
 
 	RenderReady();
 	
@@ -198,13 +247,23 @@ VOID Engine::Rendering()
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
 
-		g_pTerrain->Draw();
+		g_pTerrain->Draw(g_pFrustum);
+
 
 		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
 		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
 		_SetBillBoard();
+		D3DMATERIAL9 mtrl;
+		ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+		mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+		g_pd3dDevice->SetMaterial(&mtrl);
 		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
 
+
+		if (!g_bHideFrustum)
+			g_pFrustum->Draw();
+
+		//끝
 		g_pd3dDevice->EndScene();
 	}
 

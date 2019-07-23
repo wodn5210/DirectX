@@ -33,15 +33,21 @@ private:
 	LPDIRECT3D9             g_pD3D;
 	LPDIRECT3DDEVICE9       g_pd3dDevice;
 
-	Camera*					g_pCamera;
-
 	DWORD					g_dwMouseX = 0;			
 	DWORD					g_dwMouseY = 0;			
 
 	//테스트용 코드
 	LPDIRECT3DVERTEXBUFFER9 g_pVB; 
 
+
+	Camera* g_pCamera;
 	Terrain* g_pTerrain;
+	Frustum* g_pFrustum;
+
+	BOOL					g_bHideFrustum = TRUE;	// Frustum을 안그릴 것인가?
+	BOOL					g_bLockFrustum = FALSE;	// Frustum을 고정할 것인가?
+	BOOL					g_bWireframe = FALSE;	// 와이어프레임으로 그릴것인가?
+
 
 public:
 	Engine();

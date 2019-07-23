@@ -1,5 +1,9 @@
 #pragma once
 #include <d3dx9.h>
+#pragma once
+#include "define.h"
+#include "Frustum.h"
+#include <stdio.h>
 
 /*
 지형처리 효율적 쿼드트리
@@ -7,24 +11,76 @@
 class QuadTree
 {
 	enum		CornerType { CORNER_TL, CORNER_TR, CORNER_BL, CORNER_BR };
+	enum			QuadLocation {
+		FRUSTUM_OUT = 0,			// 프러스텀에서 완전벗어남
+		FRUSTUM_PARTIALLY_IN = 1,	// 프러스텀에 부분포함
+		FRUSTUM_COMPLETELY_IN = 2,	// 프러스텀에 완전포함
+	};
+	
+	enum { EDGE_UP, EDGE_DN, EDGE_LT, EDGE_RT };
+
 private:
 	QuadTree* m_pChild[4];
-	int m_nCenter;			//중앙 Index
+	QuadTree* m_pNeighbor[4];
+	QuadTree* m_pParent;
+
+	int m_nCenter;			//중앙 Index - 최소단위(1)인 경우에는 m_nCenter 보장 못함 어차피 사용안하더라
 	int m_nCorner[4];		//코너들의 Index
-	
+	bool m_bCulled;
+	float m_fRadius;
+
+
 
 public:
 	QuadTree(int cx, int cy);
 	QuadTree(QuadTree* pParent);
 	~QuadTree();
 
-	BOOL Create();
-	int GenerateIndex(VOID* pIb);
+	BOOL Create(TERRAIN_VTX* pHeightMap);
+	int GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio);
+	void GetCorner(int& _0, int& _1, int& _2, int& _3)
+	{
+		_0 = m_nCorner[0]; _1 = m_nCorner[1]; _2 = m_nCorner[2]; _3 = m_nCorner[3];
+	}
 
 private:
 	BOOL _SetCorners(int TL, int TR, int BL, int BR);
 	QuadTree* _AddChild(int TL, int TR, int BL, int BR);
 	BOOL _SubDivide();
-	BOOL _IsVisible() { return (m_nCorner[CORNER_TR] - m_nCorner[CORNER_TL] <= 1); }
-	int	_GenTriIndex(int nTris, LPVOID pIndex);
+
+	int	_GenTriIndex(int nTris, VOID* pIndex, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio);
+
+	void _FrustumCull(TERRAIN_VTX* pHeightMap, Frustum* pFrustum);
+	int _IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum);
+
+	// 이웃노드를 만든다.(삼각형 찢어짐 방지용)
+	void		_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap, int cx);
+	// 쿼드트리를 검색해서 4개 코너값과 일치하는 노드를 찾는다.
+	QuadTree* _FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3);
+	// 4개 방향(상단,하단,좌측,우측)의 이웃노드 인덱스를 구한다.
+	int			_GetNodeIndex(int ed, int cx, int& _0, int& _1, int& _2, int& _3);
+	// 쿼드트리를 만든다.(Build()함수에서 불린다)
+	BOOL		_BuildQuadTree(TERRAIN_VTX* pHeightMap);
+
+
+
+	float		_GetDistance(D3DXVECTOR3* pv1, D3DXVECTOR3* pv2)
+	{
+		return D3DXVec3Length(&(*pv2 - *pv1));
+	}
+
+	// 카메라와 현재 노드와의 거리값을 기준으로 LOD값을 구한다.
+	int			_GetLODLevel(TERRAIN_VTX* pHeightMap, D3DXVECTOR3* pCamera, float fLODRatio)
+	{
+		//float d = _GetDistance((D3DXVECTOR3*)(pHeightMap + m_nCenter), pCamera);
+		float d = _GetDistance(&((pHeightMap + m_nCenter)->p), pCamera);
+		return max((int)(d * fLODRatio), 1);
+	}
+
+	// 현재 노드가 LOD등급으로 볼때  출력이 가능한 노드인가?
+	BOOL		_IsVisible(TERRAIN_VTX* pHeightMap, D3DXVECTOR3* pCamera, float fLODRatio)
+	{
+		int lv = _GetLODLevel(pHeightMap, pCamera, fLODRatio);
+		return ((m_nCorner[CORNER_TR] - m_nCorner[CORNER_TL]) <= lv);
+	}
 };

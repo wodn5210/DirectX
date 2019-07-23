@@ -1,6 +1,5 @@
 #include "Camera.h"
 
-#include <d3dx9.h>
 
 // 생성자
 Camera::Camera(LPDIRECT3DDEVICE9 _pd3dDevice)
@@ -12,7 +11,11 @@ Camera::Camera(LPDIRECT3DDEVICE9 _pd3dDevice)
 	D3DXVECTOR3	up(0.0f, 1.0f, 0.0f);
 	D3DXMatrixIdentity(&m_matView);
 	D3DXMatrixIdentity(&m_matBill);
-
+	// 프로젝션 행렬
+	D3DXMatrixPerspectiveFovLH(&m_matProj, D3DX_PI / 4, 1.0f, 1.0f, 1000.0f);
+	g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &m_matProj);
+	// 프러스텀 컬링용 프로젝션 행렬 - 눈에 보기 쉽게
+	//D3DXMatrixPerspectiveFovLH(&m_matProj, D3DX_PI / 4, 1.0f, 1.0f, 200.0f);
 
 	SetView(&eye, &lookat, &up);
 }
@@ -34,13 +37,7 @@ D3DXMATRIXA16* Camera::SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVE
 	D3DXMatrixLookAtLH(&m_matView, &m_vEye, &m_vLookat, &m_vUp);
 	g_pd3dDevice->SetTransform(D3DTS_VIEW, &m_matView);
 
-	// 프로젝션 행렬
-	D3DXMatrixPerspectiveFovLH(&m_matProj, D3DX_PI / 4, 1.0f, 1.0f, 1000.0f);
-	g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &m_matProj);
-
-	//// 프러스텀 컬링용 프로젝션 행렬
-	//D3DXMatrixPerspectiveFovLH(&m_matProj, D3DX_PI / 4, 1.0f, 1.0f, 200.0f);
-
+	
 	D3DXVec3Normalize(&m_vView, &(m_vLookat - m_vEye));
 	D3DXVec3Cross(&m_vCross, &m_vUp, &m_vView);
 
@@ -48,7 +45,7 @@ D3DXMATRIXA16* Camera::SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVE
 	m_matBill._41 = 0.0f;
 	m_matBill._42 = 0.0f;
 	m_matBill._43 = 0.0f;
-
+	
 	return &m_matView;
 }
 

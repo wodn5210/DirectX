@@ -1,7 +1,5 @@
 #include "Terrain.h"
 #include "Dib.h"
-#include "GlobalFunc.h"
-//Terrain::
 
 Terrain::Terrain() {
 	center[0] = center[1] = center[2] = 0;
@@ -17,6 +15,7 @@ HRESULT Terrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLOD
 {
 	m_pd3dDevice = device;
 	m_scale = *scale;
+
 	m_fLODRatio = fLODRatio;
 
 	if (FAILED(_CreateHeightMap(heightmap_dir)))
@@ -48,13 +47,14 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 
 	m_x = DIB_CX(pDIB);
 	m_z = DIB_CY(pDIB);
-
+	
 
 	// m_x나 m_z가 (2^n+1)이 아닌경우 E_FAIL을 반환
-	n = Log2(m_x);
-	if ((Pow2(n) + 1) != m_x) return E_FAIL;
-	n = Log2(m_z);
-	if ((Pow2(n) + 1) != m_z) return E_FAIL;
+	n = MATH::Log2(m_x);
+	if ((MATH::Pow2(n) + 1) != m_x) return E_FAIL;
+	n = MATH::Log2(m_z);
+	if ((MATH::Pow2(n) + 1) != m_z) return E_FAIL;
+
 
 	m_pHeightMap = new TERRAIN_VTX[m_x * m_z];
 
@@ -66,6 +66,7 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 			v.p.x = (float)((x - m_x / 2) * m_scale.x);
 			v.p.z = -(float)((z - m_z / 2) * m_scale.z);
 			v.p.y = (float)(*(DIB_DATAXY_INV(pDIB, x, z))) * m_scale.y;
+			//m_y 최대높이
 			if (m_y < v.p.y)
 				m_y = v.p.y;
 			D3DXVec3Normalize(&v.n, &v.p);
@@ -118,7 +119,7 @@ HRESULT Terrain::_CreateVIB()
 }
 HRESULT Terrain::_CreateQuadTree()
 {
-	m_pQuadTree->Create();
+	m_pQuadTree->Create(m_pHeightMap);
 	return S_OK;
 }
 HRESULT Terrain::_Render()
@@ -138,13 +139,13 @@ HRESULT Terrain::_Render()
 	m_pd3dDevice->SetTexture(0, NULL);
 	return S_OK;
 }
-HRESULT	Terrain::Draw()
+HRESULT	Terrain::Draw(Frustum* pFrustum)
 {
 	VOID* pI;
 	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pI, 0)))
 		return E_FAIL;
 	//쿼드 트리에서 인덱스 채우기
-	m_nTriangles = m_pQuadTree->GenerateIndex(pI);
+	m_nTriangles = m_pQuadTree->GenerateIndex(pI, m_pHeightMap, pFrustum, m_fLODRatio);
 	m_pIB->Unlock();
 	_Render();
 

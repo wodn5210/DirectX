@@ -4,7 +4,10 @@
 #include <vector>
 #include <string>
 #include "QuadTree.h"
+#include "Frustum.h"
 
+#pragma once
+#include "define.h"
 using namespace std;
 
 /*
@@ -12,24 +15,14 @@ using namespace std;
 높이맵을 이용해서 구현하자
 */
 
-struct TERRAIN_VTX
-{
-	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1) };
-	D3DXVECTOR3	p;
-	D3DXVECTOR3	n;
-	D3DXVECTOR2	t;
-};
-struct TRI_IDX
-{
-	WORD _0, _1, _2;
-};
 
 
 class Terrain
 {
 private:
 	int center[3];			// 지형을 설치할 중점
-	int m_x, m_y, m_z;		// 높이맵의 x, y, z(z는 최대높이값) 크기
+	int m_x, m_z;		// 높이맵의 x, y, z(z는 최대높이값) 크기
+	float m_y;
 	D3DXVECTOR3 m_scale;		// x, y, z축 scale
 	TERRAIN_VTX* m_pHeightMap;
 	LPDIRECT3DDEVICE9		m_pd3dDevice;
@@ -38,6 +31,8 @@ private:
 	LPDIRECT3DINDEXBUFFER9	m_pIB;
 	int m_nTriangles;	// 가시화 할 삼각형 수
 	float m_fLODRatio;	// LOD 보정값
+
+
 	QuadTree* m_pQuadTree;	
 
 public:
@@ -46,7 +41,7 @@ public:
 
 	HRESULT Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLODRatio,
 		string heightmap_dir, vector<string> texture_dir);
-	HRESULT		Draw();
+	HRESULT		Draw(Frustum* pFrustum);
 
 
 private:

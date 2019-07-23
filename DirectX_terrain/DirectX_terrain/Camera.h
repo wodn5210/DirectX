@@ -27,6 +27,7 @@ public:
 	
 	D3DXMATRIXA16* GetViewMatrix() { return &m_matView; }
 	D3DXMATRIXA16* GetBillMatrix() { return &m_matBill; }
+	D3DXMATRIXA16* GetProjMatrix() { return &m_matProj; }
 	D3DXVECTOR3* GetEye() { return &m_vEye; }
 	D3DXVECTOR3* GetLookat() { return &m_vLookat; }
 	D3DXVECTOR3* GetUp() { return &m_vUp; }
