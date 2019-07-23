@@ -1,5 +1,8 @@
 #include <d3d9.h>
 #include "Engine.h"
+
+#define HEIGHT 768
+#define WIDTH 1024
 #pragma warning(disable:4996)
 #define START_CONSOLE() {AllocConsole();  freopen("CONOUT$", "w", stdout); freopen("CONIN$", "r", stdin);}
 #define STOP_CONSOLE()  {FreeConsole();}
@@ -38,7 +41,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 	RegisterClassEx(&wc);
 
 	HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
-		WS_OVERLAPPEDWINDOW, 200, 200, 500, 500,
+		WS_OVERLAPPEDWINDOW, -0, 0, WIDTH, HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	START_CONSOLE();  //// 디버그 콘솔 시작

@@ -36,8 +36,8 @@ private:
 	DWORD					g_dwMouseX = 0;			
 	DWORD					g_dwMouseY = 0;			
 
-	//테스트용 코드
-	LPDIRECT3DVERTEXBUFFER9 g_pVB; 
+	////테스트용 코드
+	//LPDIRECT3DVERTEXBUFFER9 g_pVB; 
 
 
 	Camera* g_pCamera;

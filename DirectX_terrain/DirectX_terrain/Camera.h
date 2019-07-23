@@ -24,7 +24,8 @@ public:
 	void			SetEye(D3DXVECTOR3* pv) { m_vEye = *pv; }
 	void			SetLookat(D3DXVECTOR3* pv) { m_vLookat = *pv; }
 	void			SetUp(D3DXVECTOR3* pv) { m_vUp = *pv; }
-	
+	void			SetViewport(int width, int height);
+
 	D3DXMATRIXA16* GetViewMatrix() { return &m_matView; }
 	D3DXMATRIXA16* GetBillMatrix() { return &m_matBill; }
 	D3DXMATRIXA16* GetProjMatrix() { return &m_matProj; }

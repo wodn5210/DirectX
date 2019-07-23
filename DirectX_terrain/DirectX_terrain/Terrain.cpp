@@ -160,8 +160,22 @@ HRESULT	Terrain::Draw(Frustum* pFrustum)
 	//Äõµå Æ®¸®¿¡¼­ ÀÎµ¦½º Ã¤¿ì±â
 	m_nTriangles = m_pQuadTree->GenerateIndex(pI, m_pHeightMap, pFrustum, m_fLODRatio);
 	m_pIB->Unlock();
+
+	_SetMaterial();
 	_Render();
 
 
+	return S_OK;
+}
+
+HRESULT	Terrain::_SetMaterial()
+{
+	D3DMATERIAL9 mtrl;
+	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
+	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
+	mtrl.Diffuse.a = mtrl.Ambient.a = 0.0f;
+	m_pd3dDevice->SetMaterial(&mtrl);
 	return S_OK;
 }

@@ -106,7 +106,7 @@ BOOL QuadTree::_SubDivide()
 int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex, 
 	TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio)
 {
-	// 컬링된 노드라면 그냥 리턴
+	// 컬링된 노드라면 그냥 리턴 - 화면 밖이라 그릴 필요가 없다
 	if (m_bCulled)
 	{
 		m_bCulled = FALSE;
@@ -115,6 +115,7 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	}
 
 
+	//출력이 불가능하다는것은 거리가 가까워서 더 미세한 레벨의 Mesh로 렌더링 해야한다는것
 	if (_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio))
 	{
 		unsigned short* p = ((unsigned short*)pIndex) + nTris * 3;
@@ -132,6 +133,8 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 			nTris++;
 			return nTris;
 		}
+
+		
 
 		BOOL	b[4];
 		// 상단 이웃노드(neightbor node)가 출력가능한가?
@@ -207,7 +210,7 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 		return nTris;	// 이 노드 아래의 자식노드는 탐색할 필요없으므로 리턴!
 	}
 
-
+	//출력 불가능한경우 한단계 더 미세한 Child를 이용해서 렌더링한다. (128 -> 64 -> 32 -> 16 -> 8 -> 4 -> 2 -> 1)
 	if (m_pChild[CORNER_TL]) nTris = m_pChild[CORNER_TL]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
 	if (m_pChild[CORNER_TR]) nTris = m_pChild[CORNER_TR]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
 	if (m_pChild[CORNER_BL]) nTris = m_pChild[CORNER_BL]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
@@ -283,11 +286,8 @@ int QuadTree::_IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum)
 		return FRUSTUM_OUT;
 
 	// 쿼드트리의 4정점 프러스텀 경계 테스트
-	BOOL bVtx[4];
 	for (int i = 0; i < 4; i++)
 	{
-		//bVtx[i] = pFrustum->IsIn(vec[i]);
-
 		//하나라도 밖에 있다 -> 부분 내부
 		if (pFrustum->IsIn(vec[i]) == FALSE)
 			return FRUSTUM_PARTIALLY_IN;

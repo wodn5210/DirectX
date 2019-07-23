@@ -12,6 +12,7 @@ Engine::~Engine()
 {
 	delete g_pCamera;
 	delete g_pFrustum;
+	delete g_pTerrain;
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
 
@@ -60,24 +61,22 @@ HRESULT Engine::InitView()
 
 	// 뷰 행렬을 설정
 	D3DXVECTOR3 vEyePt(0.0f, 100.f, -70.0f);
-	//D3DXVECTOR3 vEyePt(0.0f, 5.0f, -3.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 5.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	g_pCamera->SetView(&vEyePt, &vLookatPt, &vUpVec);
+
+
+	RECT	rc;
+	GetClientRect(g_hwnd, &rc);
+	int width = (rc.right - rc.left);
+	int height = (rc.bottom - rc.top);
+	g_pCamera->SetViewport(width, height);
 
 	return S_OK;
 }
 HRESULT Engine::InitLight()
 {
-	// 재질(material)설정
-// 재질은 디바이스에 단 하나만 설정될 수 있다.
-	D3DMATERIAL9 mtrl;
-	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
-	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
-	mtrl.Diffuse.a = mtrl.Ambient.a = 0.0f;
-	g_pd3dDevice->SetMaterial(&mtrl);
+
 
 	D3DXVECTOR3 vecDir;									
 	D3DLIGHT9 light;									
@@ -102,31 +101,7 @@ HRESULT Engine::InitLight()
 }
 HRESULT Engine::InitObj()
 {
-	CUSTOMVERTEX g_Vertices[] =
-	{
-		{ D3DXVECTOR3(-1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-	  
-		{  D3DXVECTOR3(0.0f, 21.7f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-		{	D3DXVECTOR3(1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f),},
-	};
-
-	/// 정점버퍼 생성
-	if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-		0, D3DFVF_CUSTOMVERTEX,
-		D3DPOOL_DEFAULT, &g_pVB, NULL)))
-	{
-		return E_FAIL;
-	}
-
-	/// 정점버퍼를 값으로 채운다. 
-	VOID* pVertices;
-	if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
-		return E_FAIL;
-	memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
-	g_pVB->Unlock();
-
-	//위에껀 테스트
-	//아래께 진짜
+	
 	g_pFrustum = new Frustum(g_pd3dDevice);
 	vector<string> tex_file_dir;
 	tex_file_dir.push_back("src/tile2.tga");
@@ -135,9 +110,32 @@ HRESULT Engine::InitObj()
 	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f, 
 		"src/map129.bmp", tex_file_dir);
 
-	
 
+	////이하 삼각형 출력 테스트 코드
+	//CUSTOMVERTEX g_Vertices[] =
+	//{
+	//	{ D3DXVECTOR3(-1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+	//  
+	//	{  D3DXVECTOR3(0.0f, 21.7f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+	//	{	D3DXVECTOR3(1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f),},
+	//};
 
+	///// 정점버퍼 생성
+	//if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
+	//	0, D3DFVF_CUSTOMVERTEX,
+	//	D3DPOOL_DEFAULT, &g_pVB, NULL)))
+	//{
+	//	return E_FAIL;
+	//}
+
+	///// 정점버퍼를 값으로 채운다. 
+	//VOID* pVertices;
+	//if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
+	//	return E_FAIL;
+	//memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
+	//g_pVB->Unlock();
+
+	return TRUE;
 }
 
 VOID Engine::_MouseEvent()
@@ -159,12 +157,15 @@ VOID Engine::_MouseEvent()
 	SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
 	RECT	rc;
 	GetClientRect(g_hwnd, &rc);
+
 	pt.x = (rc.right - rc.left) / 2;
 	pt.y = (rc.bottom - rc.top) / 2;
 	ClientToScreen(g_hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
 	g_dwMouseX = pt.x;
 	g_dwMouseY = pt.y;
+
+	
 }
 VOID Engine::_KeyEvent()
 {
@@ -220,6 +221,9 @@ VOID Engine::RenderReady()
 	//키보드 이벤트
 	_KeyEvent();
 
+
+	//프러스텀 효과 가시화하기위한것.
+	//막히면 마지막으로 설정되었던 프러스텀효과를 보여준다
 	if (!g_bLockFrustum)
 	{
 		D3DXMATRIXA16	m;
@@ -251,15 +255,15 @@ VOID Engine::Rendering()
 		g_pTerrain->Draw(g_pFrustum);
 
 
-		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-		_SetBillBoard();
-		D3DMATERIAL9 mtrl;
-		ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-		mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-		g_pd3dDevice->SetMaterial(&mtrl);
-		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
-
+		//g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
+		//g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
+		//_SetBillBoard();
+		//D3DMATERIAL9 mtrl;
+		//ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+		//mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+		//g_pd3dDevice->SetMaterial(&mtrl);
+		//g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
+		
 
 		if (!g_bHideFrustum)
 			g_pFrustum->Draw();

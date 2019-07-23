@@ -20,7 +20,11 @@ Camera::Camera(LPDIRECT3DDEVICE9 _pd3dDevice)
 	SetView(&eye, &lookat, &up);
 }
 
-
+void	Camera::SetViewport(int width, int height)
+{
+	D3DVIEWPORT9 vp = { 0, 0, width, height, 0, 1 };
+	g_pd3dDevice->SetViewport(&vp);
+}
 
 // 카메라 행렬을 생성하기위한 기본 벡터값들을 설정한다.
 D3DXMATRIXA16* Camera::SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVECTOR3* pvUp)

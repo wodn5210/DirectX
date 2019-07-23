@@ -43,6 +43,7 @@ public:
 		string heightmap_dir, vector<string> texture_dir);
 	HRESULT		Draw(Frustum* pFrustum);
 
+	
 
 private:
 	HRESULT _CreateHeightMap(string fileName);
@@ -50,5 +51,6 @@ private:
 	HRESULT _CreateVIB();
 	HRESULT _CreateQuadTree();
 	HRESULT _Render();
+	HRESULT _SetMaterial();
 };
 
