@@ -42,6 +42,6 @@ VOID Ray::_TransformRay()
 	D3DXVec3TransformNormal(&m_direction, &m_direction, &viewInverse);
 	D3DXVec3Normalize(&m_direction, &m_direction);
 
-	printf("pos = (%.3f %.3f %.3f)\n", m_origin.x, m_origin.y, m_origin.z);
-	printf("dir = (%.3f %.3f %.3f)\n", m_direction.x, m_direction.y, m_direction.z);
+	//printf("pos = (%.3f %.3f %.3f)\n", m_origin.x, m_origin.y, m_origin.z);
+	//printf("dir = (%.3f %.3f %.3f)\n", m_direction.x, m_direction.y, m_direction.z);
 }

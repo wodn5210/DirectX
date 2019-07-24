@@ -107,11 +107,12 @@ BOOL QuadTree::_SubDivide()
 int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex, 
 	TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio)
 {
+	m_VisibleIdx.clear();
 	// 컬링된 노드라면 그냥 리턴 - 화면 밖이라 그릴 필요가 없다
 	if (m_bCulled)
 	{
 		m_bCulled = FALSE;
-		m_VisibleIdx.clear();
+
 		return nTris;
 	}
 
@@ -120,31 +121,16 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	if (_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio))
 	{
 		unsigned short* p = ((unsigned short*)pIndex) + nTris * 3;
-		vector<TRI_IDX> buf_idx;
+
 		// 만약 최하위 노드라면 부분분할(subdivide)이 불가능하므로 그냥 출력하고 리턴한다.
 		if (m_nCorner[CORNER_TR] - m_nCorner[CORNER_TL] <= 1)
 		{
-			/**p++ = m_nCorner[0];
-			*p++ = m_nCorner[1];
-			*p++ = m_nCorner[2];
-			
-			nTris++;
 
+			*p++ = m_nCorner[0];	*p++ = m_nCorner[1];	*p++ = m_nCorner[2];	nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 
-			*p++ = m_nCorner[2];
-			*p++ = m_nCorner[1];
-			*p++ = m_nCorner[3];
-*/
-			buf_idx.push_back({ m_nCorner[0] , m_nCorner[1] , m_nCorner[2] });
-			buf_idx.push_back({ m_nCorner[2] , m_nCorner[1] , m_nCorner[3] });
-
-			for (int i = 0; i < 2; i++)
-			{
-				*p++ = buf_idx[i]._0;
-				*p++ = buf_idx[i]._1;
-				*p++ = buf_idx[i]._2;
-			}
-			nTris += 2;
+			*p++ = m_nCorner[2];	*p++ = m_nCorner[1];	*p++ = m_nCorner[3];	nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 
 			
 			return nTris;
@@ -166,65 +152,79 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 		// 부분분할이 필요없다.
 		if (b[EDGE_UP] && b[EDGE_DN] && b[EDGE_LT] && b[EDGE_RT])
 		{
-			*p++ = m_nCorner[0];
-			*p++ = m_nCorner[1];
-			*p++ = m_nCorner[2];
-			buf_idx.push_back({ m_nCorner[0] , m_nCorner[1] , m_nCorner[2] });
-			nTris++;
+			*p++ = m_nCorner[0];	*p++ = m_nCorner[1];	*p++ = m_nCorner[2];	nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 
-			*p++ = m_nCorner[2];
-			*p++ = m_nCorner[1];
-			*p++ = m_nCorner[3];
-			buf_idx.push_back({ m_nCorner[2] , m_nCorner[1] , m_nCorner[3] });
-			nTris++;
-			m_VisibleIdx = buf_idx;
+			*p++ = m_nCorner[2];	*p++ = m_nCorner[1];	*p++ = m_nCorner[3];	nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
+
 			return nTris;
 		}
 
-		int		n;
+		WORD		n;
 
 		if (!b[EDGE_UP]) // 상단 부분분할이 필요한가?
 		{
 			n = (m_nCorner[CORNER_TL] + m_nCorner[CORNER_TR]) / 2;
+
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TL]; *p++ = n; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
+
 			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_TR]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 		else	// 상단 부분분할이 필요없을 경우
 		{
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TL]; *p++ = m_nCorner[CORNER_TR]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 
 		if (!b[EDGE_DN]) // 하단 부분분할이 필요한가?
 		{
 			n = (m_nCorner[CORNER_BL] + m_nCorner[CORNER_BR]) / 2;
+
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BR]; *p++ = n; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
+
 			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_BL]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 		else	// 하단 부분분할이 필요없을 경우
 		{
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BR]; *p++ = m_nCorner[CORNER_BL]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 
 		if (!b[EDGE_LT]) // 좌측 부분분할이 필요한가?
 		{
 			n = (m_nCorner[CORNER_TL] + m_nCorner[CORNER_BL]) / 2;
+
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BL]; *p++ = n; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
+
 			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_TL]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 		else	// 좌측 부분분할이 필요없을 경우
 		{
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_BL]; *p++ = m_nCorner[CORNER_TL]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 
 		if (!b[EDGE_RT]) // 우측 부분분할이 필요한가?
 		{
 			n = (m_nCorner[CORNER_TR] + m_nCorner[CORNER_BR]) / 2;
+
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TR]; *p++ = n; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
+
 			*p++ = m_nCenter; *p++ = n; *p++ = m_nCorner[CORNER_BR]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 		else	// 우측 부분분할이 필요없을 경우
 		{
 			*p++ = m_nCenter; *p++ = m_nCorner[CORNER_TR]; *p++ = m_nCorner[CORNER_BR]; nTris++;
+			m_VisibleIdx.push_back({ *(p - 3), *(p - 2), *(p - 1) });
 		}
 
 		return nTris;	// 이 노드 아래의 자식노드는 탐색할 필요없으므로 리턴!
@@ -468,9 +468,65 @@ BOOL	QuadTree::_BuildQuadTree(TERRAIN_VTX* pHeightMap)
 	return TRUE;
 }
 
-HRESULT QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3])
+VOID QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VTX* pHeightMap)
 {
+	if (m_bCulled)
+	{
+		return;
+	}
+	float u, v, buf_dist;
+	
+	//Cull도 안되있는데 visible한 idx없다면 하위노드 탐색하자
+	if (m_VisibleIdx.size() == 0) 
+	{
 
+		//현재 쿼드트리 대각선 절반으로 잘라서 맞는곳 찾기
+		
+		//왼위 삼각형
+		if (D3DXIntersectTri(&pHeightMap[m_nCorner[CORNER_TL]].p, &pHeightMap[m_nCorner[CORNER_TR]].p,
+			&pHeightMap[m_nCorner[CORNER_BL]].p, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
+		{
+			if (m_pChild[CORNER_TL]) { m_pChild[CORNER_TL]->SearchInTree(ray, dist, pos, pHeightMap); }
+			if (m_pChild[CORNER_TR]) { m_pChild[CORNER_TR]->SearchInTree(ray, dist, pos, pHeightMap); }
+			if (m_pChild[CORNER_BL]) { m_pChild[CORNER_BL]->SearchInTree(ray, dist, pos, pHeightMap); }
+		}
+		//오른아래 삼각형
+		else if (D3DXIntersectTri(&pHeightMap[m_nCorner[CORNER_TR]].p, &pHeightMap[m_nCorner[CORNER_BL]].p,
+			&pHeightMap[m_nCorner[CORNER_BR]].p, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
+		{
+			if (m_pChild[CORNER_TR]) { m_pChild[CORNER_TR]->SearchInTree(ray, dist, pos, pHeightMap); }
+			if (m_pChild[CORNER_BL]) { m_pChild[CORNER_BL]->SearchInTree(ray, dist, pos, pHeightMap); }
+			if (m_pChild[CORNER_BR]) { m_pChild[CORNER_BR]->SearchInTree(ray, dist, pos, pHeightMap); }
+		}
+	}
+	//가시화중인 삼각형 있다는것! 
+	else
+	{
+		//printf("%d\n", m_VisibleIdx.size());
+		for (int i = 0; i < m_VisibleIdx.size(); i++)
+		{
+			TRI_IDX now = m_VisibleIdx[i];
+			//printf("%d %d %d\n", now._0, now._1, now._2);
+			D3DXVECTOR3* v0 = &pHeightMap[now._0].p;
+			D3DXVECTOR3* v1 = &pHeightMap[now._1].p;
+			D3DXVECTOR3* v2 = &pHeightMap[now._2].p;
+			
+			printf("%.3f %.3f %.3f\n", v0->x, v0->y, v0->z);
+			printf("%.3f %.3f %.3f\n", v1->x, v1->y, v1->z);
+			printf("%.3f %.3f %.3f\n", v2->x, v2->y, v2->z);
+			
+			if (D3DXIntersectTri(v0, v1, v2, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
+			{
+				//printf("%.3f\n", buf_dist);
+				//값 갱신 - dist와 pos
+				if (dist > buf_dist) 
+				{
+					//printf("찾음\n");
+					pos[0] = *v0;	pos[1] = *v1;	pos[2] = *v2;	dist = buf_dist;
+				}
+			}
+		}
 
-	return S_OK;
+	}
+	return;
 }

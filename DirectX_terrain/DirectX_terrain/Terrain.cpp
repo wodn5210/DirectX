@@ -8,6 +8,8 @@ Terrain::Terrain() {
 Terrain::~Terrain() {
 	for (unsigned int i = 0; i < m_vTex.size(); i++)
 		m_vTex[i]->Release();
+	delete m_pQuadTree;
+	delete m_pHeightMap;
 }
 
 HRESULT Terrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLODRatio,
@@ -131,6 +133,7 @@ HRESULT Terrain::_Render()
 	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+
 	m_pd3dDevice->SetTexture(0, m_vTex[0]);								// 0번 텍스쳐 스테이지에 텍스쳐 고정(색깔맵)
 	m_pd3dDevice->SetTexture(1, m_vTex[1]);								// 1번 텍스쳐 스테이지에 텍스쳐 고정(음영맵)
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
@@ -144,6 +147,8 @@ HRESULT Terrain::_Render()
 	m_pd3dDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE2X);	// MODULATE2로 섞는다.
 	m_pd3dDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_TEXTURE);		// 텍스처
 	m_pd3dDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_CURRENT);		// 현재색
+
+
 	m_pd3dDevice->SetStreamSource(0, m_pVB, 0, sizeof(TERRAIN_VTX));
 	m_pd3dDevice->SetFVF(TERRAIN_VTX::FVF);
 	m_pd3dDevice->SetIndices(m_pIB);
@@ -163,10 +168,6 @@ HRESULT	Terrain::Draw(Frustum* pFrustum)
 	m_pIB->Unlock();
 	_SetMaterial();
 	_Render();
-	
-	
-	
-	
 
 	return S_OK;
 }
@@ -183,7 +184,7 @@ HRESULT	Terrain::_SetMaterial()
 	return S_OK;
 }
 
-HRESULT Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
+VOID Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 {
 	//Terrian은 QuadTree있어서 이걸 이용하면 효과적일듯
 	//여기서 Object가 Transform있다면 ray의 pos와 dir을 역변환 해주자 -> 로컬 좌표계
@@ -191,11 +192,7 @@ HRESULT Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 
 	// 의사코드: Transform(ray, ray, worldMatInverse);
 
-	if (m_pQuadTree->SearchInTree(ray, dist, pos))
-	{
-
-	}
+	m_pQuadTree->SearchInTree(ray, dist, pos, m_pHeightMap);
 
 
-	return S_OK;
 }

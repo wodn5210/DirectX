@@ -47,7 +47,7 @@ public:
 		string heightmap_dir, vector<string> texture_dir);
 	HRESULT		Draw(Frustum* pFrustum);
 
-	HRESULT MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
+	VOID MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
 
 private:
 	HRESULT _CreateHeightMap(string fileName);

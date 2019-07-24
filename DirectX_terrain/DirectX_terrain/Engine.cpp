@@ -110,31 +110,6 @@ HRESULT Engine::InitObj()
 	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f, 
 		"src/map129.bmp", tex_file_dir);
 
-
-	//이하 삼각형 출력 테스트 코드
-	CUSTOMVERTEX g_Vertices[] =
-	{
-		{ D3DXVECTOR3(-1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-	  
-		{  D3DXVECTOR3(0.0f, 21.7f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-		{	D3DXVECTOR3(1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f),},
-	};
-
-	/// 정점버퍼 생성
-	if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-		0, D3DFVF_CUSTOMVERTEX,
-		D3DPOOL_DEFAULT, &g_pVB, NULL)))
-	{
-		return E_FAIL;
-	}
-
-	/// 정점버퍼를 값으로 채운다. 
-	VOID* pVertices;
-	if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
-		return E_FAIL;
-	memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
-	g_pVB->Unlock();
-
 	return TRUE;
 }
 
@@ -154,7 +129,7 @@ VOID Engine::_MouseEvent()
 
 
 	// 마우스를 윈도우의 중앙으로 초기화
-	SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
+	//SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
 	RECT	rc;
 	GetClientRect(g_hwnd, &rc);
 
@@ -233,23 +208,15 @@ VOID Engine::Rendering()
 
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
-
+		
 		g_pTerrain->Draw(g_pFrustum);
-
-
-		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-		_SetBillBoard();
-		D3DMATERIAL9 mtrl;
-		ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-		mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-		g_pd3dDevice->SetMaterial(&mtrl);
-		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
 		
 
 		if (!g_bHideFrustum)
 			g_pFrustum->Draw();
-
+		if (g_bSelectTriOn)
+			_SelectTriDraw();
+		
 		//끝
 		g_pd3dDevice->EndScene();
 	}
@@ -264,13 +231,58 @@ VOID Engine::MeshPickingStart(int x, int y)
 	ray.Create(g_pd3dDevice, x, y);
 
 	D3DXVECTOR3 pos[3];
-	float dist = FLT_MIN;
+	float dist = FLT_MAX;
+	
 	//Object객체들의 Search시작하자
-	//dir이 최대값일때 pos계속 갱신하면됨
-	if (g_pTerrain->MeshPicking(ray, dist, pos))
+	//dist 최대값일때 pos계속 갱신하면됨 - 내부에서 진행할거임
+	g_pTerrain->MeshPicking(ray, dist, pos);
+
+	//값 갱신 되었으면 어떤 위치 찾은거임
+	if(dist != FLT_MAX)
 	{
-		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자
-		//cmd창에 출력도 하고
+		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자 - Pos 정점 3개를 삼각형으로 만들어버리자
+		
+		//이하 삼각형 출력 테스트 코드
+		//가시화를 위해서 1 dir만큼 화면으로 당겨온다 - 완전 겹치면 가시화가 잘안됨
+		CUSTOMVERTEX g_Vertices[] =
+		{
+			{ pos[0] ,  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+			{ pos[1],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+			{ pos[2],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+		};
+
+		/// 정점버퍼 생성
+		if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
+			0, D3DFVF_CUSTOMVERTEX,
+			D3DPOOL_DEFAULT, &g_pVB, NULL)))
+		{
+			return;
+		}
+
+		/// 정점버퍼를 값으로 채운다. 
+		VOID* pVertices;
+		if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
+			return;
+		memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
+		g_pVB->Unlock();
+
+		g_bSelectTriOn = TRUE;
 	}
 
+}
+
+VOID Engine::_SelectTriDraw()
+{
+	D3DXMATRIXA16 world;
+	D3DXMatrixIdentity(&world);
+	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	g_pd3dDevice->SetTransform(D3DTS_WORLD, &world);
+	g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
+	g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
+	//_SetBillBoard();
+	D3DMATERIAL9 mtrl;
+	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+	g_pd3dDevice->SetMaterial(&mtrl);
+	g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
 }

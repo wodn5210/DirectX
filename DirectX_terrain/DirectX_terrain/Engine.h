@@ -36,7 +36,7 @@ private:
 	DWORD					g_dwMouseX = 0;			
 	DWORD					g_dwMouseY = 0;			
 
-	//테스트용 코드
+	//클릭한 삼각형 출력용
 	LPDIRECT3DVERTEXBUFFER9 g_pVB; 
 
 
@@ -47,6 +47,15 @@ private:
 	BOOL					g_bHideFrustum = TRUE;	// Frustum을 안그릴 것인가?
 	BOOL					g_bLockFrustum = FALSE;	// Frustum을 고정할 것인가?
 	BOOL					g_bWireframe = FALSE;	// 와이어프레임으로 그릴것인가?
+	BOOL					g_bSelectTriOn = FALSE;	// 선택한 삼각형 빨강색으로 그리기
+
+private:
+	VOID _MouseEvent();
+	VOID _KeyEvent();
+
+	VOID _SetBillBoard();
+	VOID _SelectTriDraw();
+
 
 
 public:
@@ -58,11 +67,7 @@ public:
 	HRESULT InitLight();
 	HRESULT InitObj();
 
-	VOID _MouseEvent();
-	VOID _KeyEvent();
-
-	VOID _SetBillBoard();
-
+	
 	VOID RenderReady();
 	VOID Rendering();
 
@@ -73,8 +78,13 @@ public:
 		g_bLockFrustum = !g_bLockFrustum;
 		g_bHideFrustum = !g_bLockFrustum;
 	}
-	VOID SetWire() {
+	VOID SetWire() 
+	{
 		g_bWireframe = !g_bWireframe;
+	}
+	VOID SetSelectOff()
+	{
+		g_bSelectTriOn = FALSE;
 	}
 };
 

@@ -55,7 +55,7 @@ public:
 		_0 = m_nCorner[0]; _1 = m_nCorner[1]; _2 = m_nCorner[2]; _3 = m_nCorner[3];
 	}
 
-	HRESULT SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
+	VOID SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VTX* pHeightMap);
 
 private:
 	BOOL _SetCorners(int TL, int TR, int BL, int BR);

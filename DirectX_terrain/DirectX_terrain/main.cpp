@@ -1,4 +1,10 @@
+
+//#define _CRTDBG_MAP_ALLOC
+//#include<stdio.h>
+//#include<stdlib.h>
+//#include<crtdbg.h>
 #include <d3d9.h>
+
 #include "Engine.h"
 
 #define HEIGHT 768
@@ -30,6 +36,9 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_F2:
 			engine.SetWire();
 			break;
+		case VK_F3:
+			engine.SetSelectOff();
+			break;
 		}
 	
 	case WM_LBUTTONDOWN:
@@ -44,7 +53,9 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
+	//_CrtSetBreakAlloc(172);
 
+	
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 					  GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 					  "D3D Tutorial", NULL };
@@ -81,7 +92,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		}
 	}
 
-
+	//_CrtDumpMemoryLeaks();
 	UnregisterClass("D3D Tutorial", wc.hInstance);
 	return 0;
 }

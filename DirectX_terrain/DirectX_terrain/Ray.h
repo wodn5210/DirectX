@@ -18,6 +18,8 @@ public:
 	~Ray();
 
 	VOID Create(LPDIRECT3DDEVICE9 g_pd3dDevice = NULL, int x = 0, int y = 0);
+	D3DXVECTOR3* GetPos() { return &m_origin; }
+	D3DXVECTOR3* GetDir() { return &m_direction; }
 private:
 	VOID _TransformRay();
 };
