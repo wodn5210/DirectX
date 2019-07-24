@@ -12,7 +12,7 @@
 #include "Light.h"
 #include "Frustum.h"
 #include "Terrain.h"
-
+#include "Ray.h"
 
 using namespace std;
 
@@ -36,8 +36,8 @@ private:
 	DWORD					g_dwMouseX = 0;			
 	DWORD					g_dwMouseY = 0;			
 
-	////테스트용 코드
-	//LPDIRECT3DVERTEXBUFFER9 g_pVB; 
+	//테스트용 코드
+	LPDIRECT3DVERTEXBUFFER9 g_pVB; 
 
 
 	Camera* g_pCamera;
@@ -65,5 +65,16 @@ public:
 
 	VOID RenderReady();
 	VOID Rendering();
+
+	VOID MeshPickingStart(int x, int y);
+
+	VOID SetFrustum()
+	{
+		g_bLockFrustum = !g_bLockFrustum;
+		g_bHideFrustum = !g_bLockFrustum;
+	}
+	VOID SetWire() {
+		g_bWireframe = !g_bWireframe;
+	}
 };
 

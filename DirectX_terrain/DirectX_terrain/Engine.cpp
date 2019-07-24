@@ -37,7 +37,7 @@ HRESULT Engine::InitD3D(HWND hWnd)
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
 	if (FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING,
 		&d3dpp, &g_pd3dDevice)))
 	{
 		return E_FAIL;
@@ -111,29 +111,29 @@ HRESULT Engine::InitObj()
 		"src/map129.bmp", tex_file_dir);
 
 
-	////이하 삼각형 출력 테스트 코드
-	//CUSTOMVERTEX g_Vertices[] =
-	//{
-	//	{ D3DXVECTOR3(-1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-	//  
-	//	{  D3DXVECTOR3(0.0f, 21.7f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-	//	{	D3DXVECTOR3(1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f),},
-	//};
+	//이하 삼각형 출력 테스트 코드
+	CUSTOMVERTEX g_Vertices[] =
+	{
+		{ D3DXVECTOR3(-1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+	  
+		{  D3DXVECTOR3(0.0f, 21.7f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
+		{	D3DXVECTOR3(1.0f, 20.0f, 20.0f),  D3DXVECTOR3(-1.0f,-1.0f, 0.0f),},
+	};
 
-	///// 정점버퍼 생성
-	//if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-	//	0, D3DFVF_CUSTOMVERTEX,
-	//	D3DPOOL_DEFAULT, &g_pVB, NULL)))
-	//{
-	//	return E_FAIL;
-	//}
+	/// 정점버퍼 생성
+	if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
+		0, D3DFVF_CUSTOMVERTEX,
+		D3DPOOL_DEFAULT, &g_pVB, NULL)))
+	{
+		return E_FAIL;
+	}
 
-	///// 정점버퍼를 값으로 채운다. 
-	//VOID* pVertices;
-	//if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
-	//	return E_FAIL;
-	//memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
-	//g_pVB->Unlock();
+	/// 정점버퍼를 값으로 채운다. 
+	VOID* pVertices;
+	if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
+		return E_FAIL;
+	memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
+	g_pVB->Unlock();
 
 	return TRUE;
 }
@@ -173,24 +173,6 @@ VOID Engine::_KeyEvent()
 	if (GetAsyncKeyState('S')) g_pCamera->MoveLocalZ(-0.5f);	
 	if (GetAsyncKeyState('A')) g_pCamera->MoveLocalX(-0.5f);
 	if (GetAsyncKeyState('D')) g_pCamera->MoveLocalX(0.5f);
-	if (GetAsyncKeyState('1'))
-	{
-		g_bLockFrustum = FALSE;
-		g_bHideFrustum = TRUE;
-	}
-	if (GetAsyncKeyState('2'))
-	{
-		g_bLockFrustum = TRUE;
-		g_bHideFrustum = FALSE;
-	}
-	if (GetAsyncKeyState('3'))
-	{
-		g_bWireframe = TRUE;
-	}
-	if (GetAsyncKeyState('4'))
-	{
-		g_bWireframe = FALSE;
-	}
 }
 VOID Engine::_SetBillBoard()
 {
@@ -255,14 +237,14 @@ VOID Engine::Rendering()
 		g_pTerrain->Draw(g_pFrustum);
 
 
-		//g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-		//g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-		//_SetBillBoard();
-		//D3DMATERIAL9 mtrl;
-		//ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-		//mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-		//g_pd3dDevice->SetMaterial(&mtrl);
-		//g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
+		g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
+		g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
+		_SetBillBoard();
+		D3DMATERIAL9 mtrl;
+		ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+		mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+		g_pd3dDevice->SetMaterial(&mtrl);
+		g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
 		
 
 		if (!g_bHideFrustum)
@@ -273,4 +255,22 @@ VOID Engine::Rendering()
 	}
 
 	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
+}
+
+
+VOID Engine::MeshPickingStart(int x, int y)
+{
+	Ray ray;
+	ray.Create(g_pd3dDevice, x, y);
+
+	D3DXVECTOR3 pos[3];
+	float dist = FLT_MIN;
+	//Object객체들의 Search시작하자
+	//dir이 최대값일때 pos계속 갱신하면됨
+	if (g_pTerrain->MeshPicking(ray, dist, pos))
+	{
+		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자
+		//cmd창에 출력도 하고
+	}
+
 }

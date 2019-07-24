@@ -24,10 +24,20 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_ESCAPE:
 			PostMessage(hWnd, WM_DESTROY, 0, 0L);
 			break;
+		case VK_F1:
+			engine.SetFrustum();
+			break;
+		case VK_F2:
+			engine.SetWire();
+			break;
 		}
+	
+	case WM_LBUTTONDOWN:
+		engine.MeshPickingStart(LOWORD(lParam), HIWORD(lParam));
+		//printf("x: %d y: %d\n", LOWORD(lParam), HIWORD(lParam));
 		break;
 	}
-
+	
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 

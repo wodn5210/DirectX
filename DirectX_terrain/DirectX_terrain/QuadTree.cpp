@@ -48,6 +48,7 @@ QuadTree::~QuadTree()
 	for (int i = 0; i < 4; i++) 
 		delete m_pChild[i];
 }
+
 BOOL QuadTree::_SetCorners(int TL, int TR, int BL, int BR)
 {
 
@@ -110,7 +111,7 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	if (m_bCulled)
 	{
 		m_bCulled = FALSE;
-
+		m_VisibleIdx.clear();
 		return nTris;
 	}
 
@@ -119,18 +120,33 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	if (_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio))
 	{
 		unsigned short* p = ((unsigned short*)pIndex) + nTris * 3;
-
+		vector<TRI_IDX> buf_idx;
 		// 만약 최하위 노드라면 부분분할(subdivide)이 불가능하므로 그냥 출력하고 리턴한다.
 		if (m_nCorner[CORNER_TR] - m_nCorner[CORNER_TL] <= 1)
 		{
-			*p++ = m_nCorner[0];
+			/**p++ = m_nCorner[0];
 			*p++ = m_nCorner[1];
 			*p++ = m_nCorner[2];
+			
 			nTris++;
+
+
 			*p++ = m_nCorner[2];
 			*p++ = m_nCorner[1];
 			*p++ = m_nCorner[3];
-			nTris++;
+*/
+			buf_idx.push_back({ m_nCorner[0] , m_nCorner[1] , m_nCorner[2] });
+			buf_idx.push_back({ m_nCorner[2] , m_nCorner[1] , m_nCorner[3] });
+
+			for (int i = 0; i < 2; i++)
+			{
+				*p++ = buf_idx[i]._0;
+				*p++ = buf_idx[i]._1;
+				*p++ = buf_idx[i]._2;
+			}
+			nTris += 2;
+
+			
 			return nTris;
 		}
 
@@ -153,11 +169,15 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 			*p++ = m_nCorner[0];
 			*p++ = m_nCorner[1];
 			*p++ = m_nCorner[2];
+			buf_idx.push_back({ m_nCorner[0] , m_nCorner[1] , m_nCorner[2] });
 			nTris++;
+
 			*p++ = m_nCorner[2];
 			*p++ = m_nCorner[1];
 			*p++ = m_nCorner[3];
+			buf_idx.push_back({ m_nCorner[2] , m_nCorner[1] , m_nCorner[3] });
 			nTris++;
+			m_VisibleIdx = buf_idx;
 			return nTris;
 		}
 
@@ -446,4 +466,11 @@ BOOL	QuadTree::_BuildQuadTree(TERRAIN_VTX* pHeightMap)
 		m_pChild[CORNER_BR]->_BuildQuadTree(pHeightMap);
 	}
 	return TRUE;
+}
+
+HRESULT QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3])
+{
+
+
+	return S_OK;
 }

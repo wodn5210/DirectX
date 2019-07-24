@@ -93,13 +93,13 @@ HRESULT Terrain::_CreateTexture(vector<string> vFileName)
 }
 HRESULT Terrain::_CreateVIB()
 {
+	VOID* pVertices;
 	// VB생성
 	if (FAILED(m_pd3dDevice->CreateVertexBuffer(m_x * m_z * sizeof(TERRAIN_VTX),
 		0, TERRAIN_VTX::FVF, D3DPOOL_DEFAULT, &m_pVB, NULL)))
 	{	
 		return E_FAIL;
 	}
-	VOID* pVertices;
 	if (FAILED(m_pVB->Lock(0, m_x * m_z * sizeof(TERRAIN_VTX), (void**)& pVertices, 0)))
 	{
 		return E_FAIL;
@@ -154,16 +154,19 @@ HRESULT Terrain::_Render()
 }
 HRESULT	Terrain::Draw(Frustum* pFrustum)
 {
-	VOID* pI;
-	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pI, 0)))
+	VOID* pIndices;
+	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)&pIndices, 0)))
 		return E_FAIL;
 	//쿼드 트리에서 인덱스 채우기
-	m_nTriangles = m_pQuadTree->GenerateIndex(pI, m_pHeightMap, pFrustum, m_fLODRatio);
-	m_pIB->Unlock();
+	m_nTriangles = m_pQuadTree->GenerateIndex(pIndices, m_pHeightMap, pFrustum, m_fLODRatio);
 
+	m_pIB->Unlock();
 	_SetMaterial();
 	_Render();
-
+	
+	
+	
+	
 
 	return S_OK;
 }
@@ -177,5 +180,22 @@ HRESULT	Terrain::_SetMaterial()
 	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
 	mtrl.Diffuse.a = mtrl.Ambient.a = 0.0f;
 	m_pd3dDevice->SetMaterial(&mtrl);
+	return S_OK;
+}
+
+HRESULT Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
+{
+	//Terrian은 QuadTree있어서 이걸 이용하면 효과적일듯
+	//여기서 Object가 Transform있다면 ray의 pos와 dir을 역변환 해주자 -> 로컬 좌표계
+	//지금은 그럴 필요가 없음
+
+	// 의사코드: Transform(ray, ray, worldMatInverse);
+
+	if (m_pQuadTree->SearchInTree(ray, dist, pos))
+	{
+
+	}
+
+
 	return S_OK;
 }

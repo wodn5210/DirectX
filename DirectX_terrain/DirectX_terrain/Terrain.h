@@ -3,10 +3,11 @@
 #include <d3dx9.h>
 #include <vector>
 #include <string>
+
 #include "QuadTree.h"
 #include "Frustum.h"
+#include "Ray.h"
 
-#pragma once
 #include "define.h"
 using namespace std;
 
@@ -20,6 +21,9 @@ using namespace std;
 class Terrain
 {
 private:
+	//정점과 인덱스가 들어있는 변수 시작번지
+	//각 data type으로 형 변환을 잘 고려해서 접근해야한다
+
 	int center[3];			// 지형을 설치할 중점
 	int m_x, m_z;		// 높이맵의 x, y, z(z는 최대높이값) 크기
 	float m_y;
@@ -43,7 +47,7 @@ public:
 		string heightmap_dir, vector<string> texture_dir);
 	HRESULT		Draw(Frustum* pFrustum);
 
-	
+	HRESULT MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
 
 private:
 	HRESULT _CreateHeightMap(string fileName);

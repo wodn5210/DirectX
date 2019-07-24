@@ -1,10 +1,13 @@
 #pragma once
 #include <d3dx9.h>
-#pragma once
+#include <vector>
+
 #include "define.h"
 #include "Frustum.h"
+#include "Ray.h"
 #include <stdio.h>
 
+using namespace std;
 /*
 지형처리 효율적 쿼드트리
 */
@@ -29,11 +32,12 @@ private:
 	QuadTree* m_pParent;
 
 	int m_nCenter;			//중앙 Index - 최소단위(1)인 경우에는 m_nCenter 보장 못함 어차피 사용안하더라
-	int m_nCorner[4];		//코너들의 Index
+	WORD m_nCorner[4];		//코너들의 Index
 	bool m_bCulled;
 	float m_fRadius;
 
-
+	//쿼드트리에서 가시화 하는 Index 저장해둔다
+	vector <TRI_IDX> m_VisibleIdx;
 
 public:
 	QuadTree(int cx, int cy);
@@ -50,6 +54,8 @@ public:
 	{
 		_0 = m_nCorner[0]; _1 = m_nCorner[1]; _2 = m_nCorner[2]; _3 = m_nCorner[3];
 	}
+
+	HRESULT SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
 
 private:
 	BOOL _SetCorners(int TL, int TR, int BL, int BR);
