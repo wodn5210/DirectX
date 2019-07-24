@@ -242,8 +242,7 @@ VOID Engine::MeshPickingStart(int x, int y)
 	{
 		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자 - Pos 정점 3개를 삼각형으로 만들어버리자
 		
-		//이하 삼각형 출력 테스트 코드
-		//가시화를 위해서 1 dir만큼 화면으로 당겨온다 - 완전 겹치면 가시화가 잘안됨
+		//이하 삼각형 출력하기위한 정점 설정
 		CUSTOMVERTEX g_Vertices[] =
 		{
 			{ pos[0] ,  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
