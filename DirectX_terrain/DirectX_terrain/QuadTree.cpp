@@ -253,6 +253,16 @@ int QuadTree::GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustu
 	_FrustumCull(pHeightMap, pFrustum);
 	return _GenTriIndex(0, pIb, pHeightMap, pFrustum, fLODRatio);
 }
+int QuadTree::GenerateMapIdx(VOID* pIb, TERRAIN_VTX* pHeightMap)
+{
+	//최상위 삼각형 2개만 찾으면 된다
+	int nTris = 0;
+	unsigned short* p = ((unsigned short*)pIb);
+	*p++ = m_nCorner[0];	*p++ = m_nCorner[1];	*p++ = m_nCorner[2];	nTris++;
+	*p++ = m_nCorner[2];	*p++ = m_nCorner[1];	*p++ = m_nCorner[3];	nTris++;
+
+	return nTris;
+}
 
 void QuadTree::_FrustumCull(TERRAIN_VTX* pHeightMap, Frustum* pFrustum)
 {
@@ -511,16 +521,18 @@ VOID QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VT
 			D3DXVECTOR3* v1 = &pHeightMap[now._1].p;
 			D3DXVECTOR3* v2 = &pHeightMap[now._2].p;
 			
-			printf("%.3f %.3f %.3f\n", v0->x, v0->y, v0->z);
-			printf("%.3f %.3f %.3f\n", v1->x, v1->y, v1->z);
-			printf("%.3f %.3f %.3f\n", v2->x, v2->y, v2->z);
+			
 			
 			if (D3DXIntersectTri(v0, v1, v2, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
 			{
 				//printf("%.3f\n", buf_dist);
 				//값 갱신 - dist와 pos
-				if (dist > buf_dist) 
+				if (0 < buf_dist && buf_dist < dist) 
 				{
+				/*	printf("%f\n", buf_dist);
+					printf("%d %.3f %.3f %f\n", now._0, v0->x, v0->y, v0->z);
+					printf("%d %.3f %.3f %f\n", now._1, v1->x, v1->y, v1->z);
+					printf("%d %.3f %.3f %f\n\n", now._2, v2->x, v2->y, v2->z);*/
 					//printf("찾음\n");
 					pos[0] = *v0;	pos[1] = *v1;	pos[2] = *v2;	dist = buf_dist;
 				}

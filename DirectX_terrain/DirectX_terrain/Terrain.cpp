@@ -157,7 +157,7 @@ HRESULT Terrain::_Render()
 	m_pd3dDevice->SetTexture(0, NULL);
 	return S_OK;
 }
-HRESULT	Terrain::Draw(Frustum* pFrustum)
+HRESULT	Terrain::DrawMain(Frustum* pFrustum)
 {
 	VOID* pIndices;
 	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)&pIndices, 0)))
@@ -169,6 +169,20 @@ HRESULT	Terrain::Draw(Frustum* pFrustum)
 	_SetMaterial();
 	_Render();
 
+	return S_OK;
+}
+
+HRESULT Terrain::DrawMap() 
+{
+	VOID* pIndices;
+	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pIndices, 0)))
+		return E_FAIL;
+	//쿼드 트리에서 인덱스 채우기
+	m_nTriangles = m_pQuadTree->GenerateMapIdx(pIndices, m_pHeightMap);
+
+	m_pIB->Unlock();
+	_SetMaterial();
+	_Render();
 	return S_OK;
 }
 

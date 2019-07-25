@@ -8,8 +8,9 @@
 
 #include <string>
 
-#include "Camera.h"
-#include "Light.h"
+#include "CamMain.h"
+#include "CamMiniMap.h"
+#include "Triangle.h"
 #include "Frustum.h"
 #include "Terrain.h"
 #include "Ray.h"
@@ -19,12 +20,6 @@ using namespace std;
 
 const string tex_dir[2] = { "src/tile2.tga", "lightmap.tga" };
 
-struct CUSTOMVERTEX
-{
-	D3DXVECTOR3 pos;     
-	D3DXVECTOR3 normal;
-};
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ|D3DFVF_NORMAL)
 
 class Engine
 {
@@ -33,14 +28,16 @@ private:
 	LPDIRECT3D9             g_pD3D;
 	LPDIRECT3DDEVICE9       g_pd3dDevice;
 
-	DWORD					g_dwMouseX = 0;			
-	DWORD					g_dwMouseY = 0;			
+	WORD					m_winSizeX;
+	WORD					m_winSizeY;
+		
 
 	//클릭한 삼각형 출력용
-	LPDIRECT3DVERTEXBUFFER9 g_pVB; 
+	Triangle* m_target;
 
 
-	Camera* g_pCamera;
+	CamMain* m_CamMain;
+	CamMiniMap* m_CamMap;
 	Terrain* g_pTerrain;
 	Frustum* g_pFrustum;
 
@@ -50,11 +47,10 @@ private:
 	BOOL					g_bSelectTriOn = FALSE;	// 선택한 삼각형 빨강색으로 그리기
 
 private:
-	VOID _MouseEvent();
-	VOID _KeyEvent();
+
 
 	VOID _SetBillBoard();
-	VOID _SelectTriDraw();
+	VOID _SelectTriDraw(bool map_render);
 
 
 
@@ -62,8 +58,9 @@ public:
 	Engine();
 	~Engine();
 
+
 	HRESULT InitD3D(HWND hWnd);
-	HRESULT InitView();
+	HRESULT InitCam();
 	HRESULT InitLight();
 	HRESULT InitObj();
 
@@ -86,5 +83,11 @@ public:
 	{
 		g_bSelectTriOn = FALSE;
 	}
+	VOID SetCameraMoveZ(float dist) { m_CamMain->MoveLocalZ(dist); };
+	VOID SetCameraMoveX(float dist) { m_CamMain->MoveLocalX(dist); };
+
+	VOID MouseMove(WORD x, WORD y);
+
+
 };
 

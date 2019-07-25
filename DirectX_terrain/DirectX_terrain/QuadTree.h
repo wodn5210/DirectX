@@ -50,6 +50,7 @@ public:
 
 	BOOL Create(TERRAIN_VTX* pHeightMap);
 	int GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio);
+	int GenerateMapIdx(VOID* pIb, TERRAIN_VTX* pHeightMap);
 	void GetCorner(int& _0, int& _1, int& _2, int& _3)
 	{
 		_0 = m_nCorner[0]; _1 = m_nCorner[1]; _2 = m_nCorner[2]; _3 = m_nCorner[3];

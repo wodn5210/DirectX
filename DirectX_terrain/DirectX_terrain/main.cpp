@@ -1,8 +1,4 @@
 
-//#define _CRTDBG_MAP_ALLOC
-//#include<stdio.h>
-//#include<stdlib.h>
-//#include<crtdbg.h>
 #include <d3d9.h>
 
 #include "Engine.h"
@@ -39,8 +35,24 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_F3:
 			engine.SetSelectOff();
 			break;
+		case 'A':
+			engine.SetCameraMoveX(-0.5f);
+			break;
+		case 'D':
+			engine.SetCameraMoveX(0.5f);
+			break;
+		case 'W':
+			engine.SetCameraMoveZ(0.5f);
+			break;
+		case 'S':
+			engine.SetCameraMoveZ(-0.5f);
+			break;
 		}
-	
+		break;
+
+	case WM_MOUSEMOVE:
+		engine.MouseMove(LOWORD(lParam), HIWORD(lParam));
+		break;
 	case WM_LBUTTONDOWN:
 		engine.MeshPickingStart(LOWORD(lParam), HIWORD(lParam));
 		//printf("x: %d y: %d\n", LOWORD(lParam), HIWORD(lParam));
@@ -53,16 +65,20 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
-	//_CrtSetBreakAlloc(172);
 
-	
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 					  GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 					  "D3D Tutorial", NULL };
 	RegisterClassEx(&wc);
 
-	HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
+	//크기조절 가능
+	/*HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
 		WS_OVERLAPPEDWINDOW, -0, 0, WIDTH, HEIGHT,
+		GetDesktopWindow(), NULL, wc.hInstance, NULL);*/
+
+	//크기조절 불가
+	HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
+		WS_MINIMIZEBOX | WS_SYSMENU, 200, 50, WIDTH, HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	START_CONSOLE();  //// 디버그 콘솔 시작
@@ -70,7 +86,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 	if (SUCCEEDED(engine.InitD3D(hWnd)) &&
 		SUCCEEDED(engine.InitObj()) &&
 		SUCCEEDED(engine.InitLight())&&
-		SUCCEEDED(engine.InitView()))
+		SUCCEEDED(engine.InitCam()))
 	{
 
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
@@ -92,7 +108,6 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		}
 	}
 
-	//_CrtDumpMemoryLeaks();
 	UnregisterClass("D3D Tutorial", wc.hInstance);
 	return 0;
 }

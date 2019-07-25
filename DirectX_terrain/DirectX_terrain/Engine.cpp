@@ -3,16 +3,15 @@
 
 Engine::Engine()
 {
-	POINT	pt;
-	GetCursorPos(&pt);
-	g_dwMouseX = pt.x;
-	g_dwMouseY = pt.y;
+	g_bSelectTriOn = FALSE;
 }
 Engine::~Engine()
 {
-	delete g_pCamera;
+	delete m_CamMain;
 	delete g_pFrustum;
 	delete g_pTerrain;
+	delete m_CamMap;
+	delete m_target;
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
 
@@ -26,7 +25,10 @@ HRESULT Engine::InitD3D(HWND hWnd)
 		return E_FAIL;
 
 	g_hwnd = hWnd;
-
+	RECT	rc;
+	GetClientRect(g_hwnd, &rc);
+	m_winSizeX = (WORD)(rc.right - rc.left);
+	m_winSizeY = (WORD)(rc.bottom - rc.top);
 
 	D3DPRESENT_PARAMETERS d3dpp;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
@@ -43,9 +45,6 @@ HRESULT Engine::InitD3D(HWND hWnd)
 		return E_FAIL;
 	}
 
-	//g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	// 기본컬링, CCW
-	//g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	// Z버퍼기능을 켠다.
@@ -55,44 +54,42 @@ HRESULT Engine::InitD3D(HWND hWnd)
 	return S_OK;
 }
 
-HRESULT Engine::InitView()
+HRESULT Engine::InitCam()
 {
-	g_pCamera = new Camera(g_pd3dDevice);
-
 	// 뷰 행렬을 설정
+	m_CamMain = new CamMain(g_pd3dDevice);
 	D3DXVECTOR3 vEyePt(0.0f, 100.f, -70.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 5.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
-	g_pCamera->SetView(&vEyePt, &vLookatPt, &vUpVec);
-
-
-	RECT	rc;
-	GetClientRect(g_hwnd, &rc);
-	int width = (rc.right - rc.left);
-	int height = (rc.bottom - rc.top);
-	g_pCamera->SetViewport(width, height);
+	m_CamMain->SetView(&vEyePt, &vLookatPt, &vUpVec);	
+	m_CamMain->SetViewport(D3DVIEWPORT9{ 0, 0, m_winSizeX, m_winSizeY, 0, 1 });
+	
+	m_CamMap = new CamMiniMap(g_pd3dDevice);
+	D3DXVECTOR3 vMapEyePt(0.0f, 160.f, 0.0f);
+	D3DXVECTOR3 vMapLookatPt(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 vMapUpVec(0.0f, 0.0f, 1.0f);
+	m_CamMap->SetView(&vMapEyePt, &vMapLookatPt, &vMapUpVec);
+	m_CamMap->SetViewport(D3DVIEWPORT9{ 100, 100, 170, 170, 0, 1 });
 
 	return S_OK;
 }
 HRESULT Engine::InitLight()
 {
-
-
-	D3DXVECTOR3 vecDir;									
-	D3DLIGHT9 light;									
-	ZeroMemory(&light, sizeof(D3DLIGHT9));			
-	light.Type = D3DLIGHT_DIRECTIONAL;			
-	light.Diffuse.r = 1.0f;						
+	D3DXVECTOR3 vecDir;
+	D3DLIGHT9 light;
+	ZeroMemory(&light, sizeof(D3DLIGHT9));
+	light.Type = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse.r = 1.0f;
 	light.Diffuse.g = 1.0f;
 	light.Diffuse.b = 0.0f;
-	vecDir = D3DXVECTOR3(1, 1, 1);				
+	vecDir = D3DXVECTOR3(1, 1, 1);
 	vecDir = D3DXVECTOR3(cosf(GetTickCount() / 350.0f),
 		1.0f,
 		sinf(GetTickCount() / 350.0f));
-	D3DXVec3Normalize((D3DXVECTOR3*)& light.Direction, &vecDir);	
-	light.Range = 1000.0f;									
-	g_pd3dDevice->SetLight(0, &light);							
-	g_pd3dDevice->LightEnable(0, TRUE);							
+	D3DXVec3Normalize((D3DXVECTOR3*)& light.Direction, &vecDir);
+	light.Range = 1000.0f;
+	g_pd3dDevice->SetLight(0, &light);
+	g_pd3dDevice->LightEnable(0, TRUE);
 	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);			// 광원설정을 켠다
 
 	g_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x00909090);		// 환경광원(ambient light)의 값 설정
@@ -101,63 +98,49 @@ HRESULT Engine::InitLight()
 }
 HRESULT Engine::InitObj()
 {
-	
+
 	g_pFrustum = new Frustum(g_pd3dDevice);
 	vector<string> tex_file_dir;
 	tex_file_dir.push_back("src/tile2.tga");
 	tex_file_dir.push_back("src/lightmap.tga");
 	g_pTerrain = new Terrain;
-	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f, 
+	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f,
 		"src/map129.bmp", tex_file_dir);
 
+	m_target = new Triangle(g_pd3dDevice);
 	return TRUE;
 }
 
-VOID Engine::_MouseEvent()
+VOID Engine::MouseMove(WORD x, WORD y)
 {
-	POINT	pt;
 	float	fDelta = 0.001f;	// 마우스의 민감도, 이 값이 커질수록 많이 움직인다.
+	POINT	pt;
+	pt.x = m_winSizeX / 2;
+	pt.y = m_winSizeY / 2;
 
-	GetCursorPos(&pt);
-	int dx = pt.x - g_dwMouseX;	// 마우스의 변화값
-	int dy = pt.y - g_dwMouseY;	// 마우스의 변화값
+	int dx = x - pt.x;	// 마우스의 변화값
+	int dy = y - pt.y;	// 마우스의 변화값
 
-	g_pCamera->RotateLocalX(dy * fDelta);	// 마우스의 Y축 회전값은 3D world의  X축 회전값
-	g_pCamera->RotateLocalY(dx * fDelta);	// 마우스의 X축 회전값은 3D world의  Y축 회전값
-	D3DXMATRIXA16* pmatView = g_pCamera->GetViewMatrix();		// 카메라 행렬을 얻는다.
-	g_pd3dDevice->SetTransform(D3DTS_VIEW, pmatView);			// 카메라 행렬 셋팅
+	m_CamMain->RotateLocalX(dy * fDelta);	// 마우스의 Y축 회전값은 3D world의  X축 회전값
+	m_CamMain->RotateLocalY(dx * fDelta);	// 마우스의 X축 회전값은 3D world의  Y축 회전값
 
+	m_CamMain->ResetView();
 
 	// 마우스를 윈도우의 중앙으로 초기화
 	//SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
-	RECT	rc;
-	GetClientRect(g_hwnd, &rc);
-
-	pt.x = (rc.right - rc.left) / 2;
-	pt.y = (rc.bottom - rc.top) / 2;
 	ClientToScreen(g_hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
-	g_dwMouseX = pt.x;
-	g_dwMouseY = pt.y;
+}
 
-	
-}
-VOID Engine::_KeyEvent()
-{
-	if (GetAsyncKeyState('W')) g_pCamera->MoveLocalZ(0.5f);	
-	if (GetAsyncKeyState('S')) g_pCamera->MoveLocalZ(-0.5f);	
-	if (GetAsyncKeyState('A')) g_pCamera->MoveLocalX(-0.5f);
-	if (GetAsyncKeyState('D')) g_pCamera->MoveLocalX(0.5f);
-}
 VOID Engine::_SetBillBoard()
 {
 	D3DXMATRIXA16 matBillBoard;
 	D3DXMatrixIdentity(&matBillBoard);
 
-	matBillBoard._11 = g_pCamera->GetBillMatrix()->_11;
-	matBillBoard._13 = g_pCamera->GetBillMatrix()->_13;
-	matBillBoard._31 = g_pCamera->GetBillMatrix()->_31;
-	matBillBoard._33 = g_pCamera->GetBillMatrix()->_33;
+	matBillBoard._11 = m_CamMain->GetBillMatrix()->_11;
+	matBillBoard._13 = m_CamMain->GetBillMatrix()->_13;
+	matBillBoard._31 = m_CamMain->GetBillMatrix()->_31;
+	matBillBoard._33 = m_CamMain->GetBillMatrix()->_33;
 	/*
 	//위치 보정 필요할 수도 있음. Obj의 중심을 넣을까? - 넣어야한다면 SetBillBoard 인자로 Obj중심 넣자
 	matBillBoard._41 = ;
@@ -172,23 +155,17 @@ VOID Engine::RenderReady()
 	//빛 설정
 	InitLight();
 
-	//마우스 이벤트
-	_MouseEvent();
-
-	//키보드 이벤트
-	_KeyEvent();
-
 
 	//프러스텀 효과 가시화하기위한것.
 	//막히면 마지막으로 설정되었던 프러스텀효과를 보여준다
 	if (!g_bLockFrustum)
 	{
 		D3DXMATRIXA16	m;
-		D3DXMATRIXA16* pView = g_pCamera->GetViewMatrix();	// 카메라 클래스로부터 행렬정보를 얻는다.
-		D3DXMATRIXA16* pProj = g_pCamera->GetProjMatrix();
+		D3DXMATRIXA16* pView = m_CamMain->GetViewMatrix();	// 카메라 클래스로부터 행렬정보를 얻는다.
+		D3DXMATRIXA16* pProj = m_CamMain->GetProjMatrix();
 
 		m = (*pView) * (*pProj);				// World좌표를 얻기위해서 View * Proj행렬을 계산한다.
-		g_pFrustum->Make(&m, g_pCamera->GetEye());	// View*Proj행렬로 Frustum을 만든다.
+		g_pFrustum->Make(&m, m_CamMain->GetEye());	// View*Proj행렬로 Frustum을 만든다.
 	}
 }
 
@@ -197,29 +174,52 @@ VOID Engine::Rendering()
 	if (NULL == g_pd3dDevice)
 		return;
 
+	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, g_bWireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+	RenderReady();	
+	
+
+	//메인 렌더링
+	m_CamMain->ResetView();
 
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-		D3DCOLOR_XRGB(128, 128, 128), 1.0f, 0);
-	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, g_bWireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
-
-
-	RenderReady();
-	
+		D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
-		
-		g_pTerrain->Draw(g_pFrustum);
-		
+		g_pTerrain->DrawMain(g_pFrustum);
 
 		if (!g_bHideFrustum)
 			g_pFrustum->Draw();
 		if (g_bSelectTriOn)
-			_SelectTriDraw();
-		
-		//끝
+			_SelectTriDraw(false);
+
 		g_pd3dDevice->EndScene();
 	}
+
+
+	//맵 렌더링
+	m_CamMap->ResetView();
+
+	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+		D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
+
+	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
+	{
+		g_pTerrain->DrawMap();
+
+		
+		//일단은 지형만 보여주자
+		if (g_bSelectTriOn)
+			_SelectTriDraw(true);
+		
+	
+		g_pd3dDevice->EndScene();
+	}
+
+
+	//원래로 돌려놔야 Picking 제대로 작동
+	m_CamMain->ResetView();
+
 
 	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
@@ -232,56 +232,37 @@ VOID Engine::MeshPickingStart(int x, int y)
 
 	D3DXVECTOR3 pos[3];
 	float dist = FLT_MAX;
-	
+
 	//Object객체들의 Search시작하자
-	//dist 최대값일때 pos계속 갱신하면됨 - 내부에서 진행할거임
+	//0<buf_dist<dist pos계속 갱신하면됨 - 내부에서 진행할거임
 	g_pTerrain->MeshPicking(ray, dist, pos);
 
 	//값 갱신 되었으면 어떤 위치 찾은거임
-	if(dist != FLT_MAX)
+	if (dist != FLT_MAX)
 	{
 		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자 - Pos 정점 3개를 삼각형으로 만들어버리자
+		m_target->Create(pos);
 		
-		//이하 삼각형 출력하기위한 정점 설정
-		CUSTOMVERTEX g_Vertices[] =
-		{
-			{ pos[0] ,  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-			{ pos[1],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-			{ pos[2],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
-		};
-
-		/// 정점버퍼 생성
-		if (FAILED(g_pd3dDevice->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-			0, D3DFVF_CUSTOMVERTEX,
-			D3DPOOL_DEFAULT, &g_pVB, NULL)))
-		{
-			return;
-		}
-
-		/// 정점버퍼를 값으로 채운다. 
-		VOID* pVertices;
-		if (FAILED(g_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
-			return;
-		memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
-		g_pVB->Unlock();
-
 		g_bSelectTriOn = TRUE;
 	}
 
 }
 
-VOID Engine::_SelectTriDraw()
+VOID Engine::_SelectTriDraw(bool map_render)
 {
-	D3DXMATRIXA16 world;
-	D3DXMatrixIdentity(&world);
-	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &world);
-	g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
-	g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
-	//_SetBillBoard();
-	D3DMATERIAL9 mtrl;
-	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-	g_pd3dDevice->SetMaterial(&mtrl);
-	g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 1);
+	if (map_render == true) 
+	{
+		D3DXMATRIXA16 scale;
+		D3DXMatrixScaling(&scale, 5, 5, 5);
+		m_target->SetScale(scale);
+	}
+	else
+	{
+		D3DXMATRIXA16 scale;
+		D3DXMatrixIdentity(&scale);
+		m_target->SetScale(scale);
+	}
+
+	m_target->DrawObj();
+
 }

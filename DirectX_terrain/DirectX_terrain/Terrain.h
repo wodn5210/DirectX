@@ -45,7 +45,8 @@ public:
 
 	HRESULT Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLODRatio,
 		string heightmap_dir, vector<string> texture_dir);
-	HRESULT		Draw(Frustum* pFrustum);
+	HRESULT		DrawMain(Frustum* pFrustum);
+	HRESULT		DrawMap();
 
 	VOID MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
 
