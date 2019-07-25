@@ -43,10 +43,12 @@ QuadTree::QuadTree(QuadTree* pParent)
 	m_bCulled = FALSE;
 	m_fRadius = 0.0f;
 }
+static int a = 0;
 QuadTree::~QuadTree()
 {
 	for (int i = 0; i < 4; i++) 
-		delete m_pChild[i];
+		if(m_pChild[i])
+			delete m_pChild[i];
 }
 
 BOOL QuadTree::_SetCorners(int TL, int TR, int BL, int BR)
@@ -513,7 +515,7 @@ VOID QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VT
 	else
 	{
 		//printf("%d\n", m_VisibleIdx.size());
-		for (int i = 0; i < m_VisibleIdx.size(); i++)
+		for (unsigned int i = 0; i < m_VisibleIdx.size(); i++)
 		{
 			TRI_IDX now = m_VisibleIdx[i];
 			//printf("%d %d %d\n", now._0, now._1, now._2);

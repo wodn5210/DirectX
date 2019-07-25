@@ -111,7 +111,7 @@ HRESULT Engine::InitObj()
 	g_pFrustum = new Frustum(g_pd3dDevice);
 	m_tri = new ObjTriangle(g_pd3dDevice);
 	m_ball = new ObjBall(g_pd3dDevice);
-	m_ball->Create(D3DXVECTOR3(0, 20, 0), 2);
+	m_ball->Create(D3DXVECTOR3(0, 20, 0), 1);
 	return TRUE;
 }
 
@@ -175,7 +175,7 @@ VOID Engine::_SetBillBoard()
 	matBillBoard._31 = m_CamMain->GetBillMatrix()->_31;
 	matBillBoard._33 = m_CamMain->GetBillMatrix()->_33;
 	/*
-	//위치 보정 필요할 수도 있음. Obj의 중심을 넣을까? - 넣어야한다면 SetBillBoard 인자로 Obj중심 넣자
+	//위치 보정 필요함 - 나중에 빌보드 쓸때 수정하자
 	matBillBoard._41 = ;
 	matBillBoard._42 = ;
 	matBillBoard._43 = ;
