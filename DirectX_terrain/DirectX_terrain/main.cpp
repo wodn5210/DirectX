@@ -35,6 +35,9 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_F3:
 			engine.SetSelectOff();
 			break;
+		case VK_F4:
+			engine.SetBallCamera();
+			break;
 		case 'A':
 			engine.SetCameraMoveX(-0.5f);
 			break;

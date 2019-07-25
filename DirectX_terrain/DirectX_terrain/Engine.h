@@ -10,7 +10,8 @@
 
 #include "CamMain.h"
 #include "CamMiniMap.h"
-#include "Triangle.h"
+#include "ObjTriangle.h"
+#include "ObjBall.h"
 #include "Frustum.h"
 #include "Terrain.h"
 #include "Ray.h"
@@ -33,11 +34,12 @@ private:
 		
 
 	//클릭한 삼각형 출력용
-	Triangle* m_target;
-
+	ObjTriangle* m_tri;
+	ObjBall* m_ball;
 
 	CamMain* m_CamMain;
 	CamMiniMap* m_CamMap;
+
 	Terrain* g_pTerrain;
 	Frustum* g_pFrustum;
 
@@ -45,14 +47,13 @@ private:
 	BOOL					g_bLockFrustum = FALSE;	// Frustum을 고정할 것인가?
 	BOOL					g_bWireframe = FALSE;	// 와이어프레임으로 그릴것인가?
 	BOOL					g_bSelectTriOn = FALSE;	// 선택한 삼각형 빨강색으로 그리기
+	BOOL					g_bBallCamera = FALSE;
 
 private:
 
 
 	VOID _SetBillBoard();
-	VOID _SelectTriDraw(bool map_render);
-
-
+	VOID _BallCameraSetup();
 
 public:
 	Engine();
@@ -83,10 +84,15 @@ public:
 	{
 		g_bSelectTriOn = FALSE;
 	}
-	VOID SetCameraMoveZ(float dist) { m_CamMain->MoveLocalZ(dist); };
-	VOID SetCameraMoveX(float dist) { m_CamMain->MoveLocalX(dist); };
+	VOID SetBallCamera()
+	{
+		g_bBallCamera = !g_bBallCamera;
+	}
+	VOID SetCameraMoveZ(float dist);
+	VOID SetCameraMoveX(float dist);
 
 	VOID MouseMove(WORD x, WORD y);
+	
 
 
 };

@@ -1,16 +1,12 @@
-#include "Triangle.h"
+#include "ObjTriangle.h"
 
 
-Triangle::Triangle(LPDIRECT3DDEVICE9 device)
+ObjTriangle::ObjTriangle(LPDIRECT3DDEVICE9 device)
 {
 	m_device = device;
-	_fvf = D3DFVF_XYZ | D3DFVF_NORMAL;
-	D3DXMatrixIdentity(&_matWorld);
-	D3DXMatrixIdentity(&_translation);
-	D3DXMatrixIdentity(&_rotation);
-	D3DXMatrixIdentity(&_scale);
+	m_fvf = D3DFVF_XYZ | D3DFVF_NORMAL;
 }
-Triangle::~Triangle()
+ObjTriangle::~ObjTriangle()
 {
 	if (m_pIB != NULL)
 		m_pIB->Release();
@@ -19,14 +15,25 @@ Triangle::~Triangle()
 		m_pVB->Release();
 }
 
-void Triangle::DrawObj()
+void ObjTriangle::DrawMain()
 {
 	m_device->SetStreamSource(0, m_pVB, 0, sizeof(CUSTOMVERTEX));
-	m_device->SetFVF(_fvf);
+	m_device->SetFVF(m_fvf);
 	m_device->SetIndices(m_pIB);
 	_InitMtrl();
-	_matWorld = _scale * _translation;
-	m_device->SetTransform(D3DTS_WORLD, &_matWorld);
+	m_matWorld = m_scale * m_translation;
+	m_device->SetTransform(D3DTS_WORLD, &m_matWorld);
+	m_device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 3, 0, 1);
+
+}
+void ObjTriangle::DrawMap()
+{
+	m_device->SetStreamSource(0, m_pVB, 0, sizeof(CUSTOMVERTEX));
+	m_device->SetFVF(m_fvf);
+	m_device->SetIndices(m_pIB);
+	_InitMtrl();
+	m_matWorld = m_bigScale * m_translation;
+	m_device->SetTransform(D3DTS_WORLD, &m_matWorld);
 	m_device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 3, 0, 1);
 
 }
@@ -35,7 +42,7 @@ void Triangle::DrawObj()
 
 
 
-HRESULT Triangle::Create(D3DXVECTOR3 pos[3])
+HRESULT ObjTriangle::Create(D3DXVECTOR3 pos[3])
 {
 	if (FAILED(_InitVB(pos)))
 	{
@@ -50,19 +57,19 @@ HRESULT Triangle::Create(D3DXVECTOR3 pos[3])
 }
 
 
-HRESULT Triangle::_InitVB(D3DXVECTOR3 pos[3])
+HRESULT ObjTriangle::_InitVB(D3DXVECTOR3 pos[3])
 {
-	D3DXVECTOR3 center = (pos[0] + pos[1] + pos[2]) / 3.0f;
-	pos[0] -= center;
-	pos[1] -= center;
-	pos[2] -= center;
+	m_center = (pos[0] + pos[1] + pos[2]) / 3.0f;
+	pos[0] -= m_center;
+	pos[1] -= m_center;
+	pos[2] -= m_center;
 
-	D3DXMatrixIdentity(&_translation);
-	_translation._41 = center.x;
-	_translation._42 = center.y;
-	_translation._43 = center.z;
+	D3DXMatrixIdentity(&m_translation);
+	m_translation._41 = m_center.x;
+	m_translation._42 = m_center.y;
+	m_translation._43 = m_center.z;
 	
-	CUSTOMVERTEX g_Vertices[] =
+	CUSTOMVERTEX gm_Vertices[] =
 	{
 		{ pos[0],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
 		{ pos[1],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
@@ -70,7 +77,7 @@ HRESULT Triangle::_InitVB(D3DXVECTOR3 pos[3])
 	};
 	/// 정점버퍼 생성
 	if (FAILED(m_device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-		0, _fvf,
+		0, m_fvf,
 		D3DPOOL_DEFAULT, &m_pVB, NULL)))
 	{
 		return E_FAIL;
@@ -78,14 +85,14 @@ HRESULT Triangle::_InitVB(D3DXVECTOR3 pos[3])
 
 	/// 정점버퍼를 값으로 채운다. 
 	VOID* pVertices;
-	if (FAILED(m_pVB->Lock(0, sizeof(g_Vertices), (void**)& pVertices, 0)))
+	if (FAILED(m_pVB->Lock(0, sizeof(gm_Vertices), (void**)& pVertices, 0)))
 		return E_FAIL;
-	memcpy(pVertices, g_Vertices, sizeof(g_Vertices));
+	memcpy(pVertices, gm_Vertices, sizeof(gm_Vertices));
 	m_pVB->Unlock();
 
 	return S_OK;
 }
-HRESULT Triangle::_InitIB()
+HRESULT ObjTriangle::_InitIB()
 {
 	MYINDEX indices[] =
 	{
@@ -108,7 +115,7 @@ HRESULT Triangle::_InitIB()
 
 	return S_OK;
 }
-HRESULT Triangle::_InitMtrl()
+HRESULT ObjTriangle::_InitMtrl()
 {
 	D3DMATERIAL9 mtrl;
 	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));

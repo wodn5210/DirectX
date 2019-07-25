@@ -35,5 +35,6 @@ public:
 	};
 
 	D3DXMATRIXA16* GetBillMatrix() { return &m_matBill; }
+	D3DXVECTOR3* GetvView() { return &m_vView; }
 };
 

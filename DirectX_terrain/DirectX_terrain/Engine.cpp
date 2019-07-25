@@ -11,7 +11,8 @@ Engine::~Engine()
 	delete g_pFrustum;
 	delete g_pTerrain;
 	delete m_CamMap;
-	delete m_target;
+	delete m_tri;
+	delete m_ball;
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
 
@@ -73,6 +74,7 @@ HRESULT Engine::InitCam()
 
 	return S_OK;
 }
+
 HRESULT Engine::InitLight()
 {
 	D3DXVECTOR3 vecDir;
@@ -96,10 +98,9 @@ HRESULT Engine::InitLight()
 
 	return S_OK;
 }
+
 HRESULT Engine::InitObj()
 {
-
-	g_pFrustum = new Frustum(g_pd3dDevice);
 	vector<string> tex_file_dir;
 	tex_file_dir.push_back("src/tile2.tga");
 	tex_file_dir.push_back("src/lightmap.tga");
@@ -107,10 +108,38 @@ HRESULT Engine::InitObj()
 	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f,
 		"src/map129.bmp", tex_file_dir);
 
-	m_target = new Triangle(g_pd3dDevice);
+	g_pFrustum = new Frustum(g_pd3dDevice);
+	m_tri = new ObjTriangle(g_pd3dDevice);
+	m_ball = new ObjBall(g_pd3dDevice);
+	m_ball->Create(D3DXVECTOR3(0, 20, 0), 2);
 	return TRUE;
 }
 
+VOID Engine::_BallCameraSetup()
+{
+	D3DXVECTOR3 eye = *(m_CamMain->GetEye());			//카메라의 위치
+	D3DXVECTOR3 view = *(m_CamMain->GetvView());		//카메라의 방향벡터
+
+	D3DXVECTOR3 ballPos = eye + view * 20;
+	m_ball->SetCenter(ballPos);
+	
+}
+VOID Engine::SetCameraMoveZ(float dist) 
+{
+	m_CamMain->MoveLocalZ(dist);
+	if (g_bBallCamera)
+	{
+		_BallCameraSetup();
+	}
+};
+VOID Engine::SetCameraMoveX(float dist) 
+{
+	m_CamMain->MoveLocalX(dist);
+	if (g_bBallCamera)
+	{
+		_BallCameraSetup();
+	}
+};
 VOID Engine::MouseMove(WORD x, WORD y)
 {
 	float	fDelta = 0.001f;	// 마우스의 민감도, 이 값이 커질수록 많이 움직인다.
@@ -130,6 +159,10 @@ VOID Engine::MouseMove(WORD x, WORD y)
 	//SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
 	ClientToScreen(g_hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
+	if (g_bBallCamera)
+	{
+		_BallCameraSetup();
+	}
 }
 
 VOID Engine::_SetBillBoard()
@@ -187,11 +220,14 @@ VOID Engine::Rendering()
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
 		g_pTerrain->DrawMain(g_pFrustum);
+		m_ball->DrawMain();
+		if (g_bSelectTriOn)
+			m_tri->DrawMain();
+
 
 		if (!g_bHideFrustum)
 			g_pFrustum->Draw();
-		if (g_bSelectTriOn)
-			_SelectTriDraw(false);
+		
 
 		g_pd3dDevice->EndScene();
 	}
@@ -206,11 +242,9 @@ VOID Engine::Rendering()
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
 		g_pTerrain->DrawMap();
-
-		
-		//일단은 지형만 보여주자
+		m_ball->DrawMap();
 		if (g_bSelectTriOn)
-			_SelectTriDraw(true);
+			m_tri->DrawMap();
 		
 	
 		g_pd3dDevice->EndScene();
@@ -241,28 +275,9 @@ VOID Engine::MeshPickingStart(int x, int y)
 	if (dist != FLT_MAX)
 	{
 		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자 - Pos 정점 3개를 삼각형으로 만들어버리자
-		m_target->Create(pos);
+		m_tri->Create(pos);
 		
 		g_bSelectTriOn = TRUE;
 	}
-
-}
-
-VOID Engine::_SelectTriDraw(bool map_render)
-{
-	if (map_render == true) 
-	{
-		D3DXMATRIXA16 scale;
-		D3DXMatrixScaling(&scale, 5, 5, 5);
-		m_target->SetScale(scale);
-	}
-	else
-	{
-		D3DXMATRIXA16 scale;
-		D3DXMatrixIdentity(&scale);
-		m_target->SetScale(scale);
-	}
-
-	m_target->DrawObj();
 
 }
