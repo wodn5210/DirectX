@@ -12,7 +12,7 @@ private:
 
 
 public:
-	CamMain(LPDIRECT3DDEVICE9 m_device = NULL);
+	CamMain(LPDIRECT3DDEVICE9 m_device);
 
 	VOID SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVECTOR3* pvUp);
 
@@ -26,7 +26,6 @@ public:
 	//dist만큼 각 방향으로 이동
 	VOID MoveLocalX(float dist);
 	VOID MoveLocalY(float dist);
-
 	VOID MoveLocalZ(float dist);
 
 	void ResetView() { 

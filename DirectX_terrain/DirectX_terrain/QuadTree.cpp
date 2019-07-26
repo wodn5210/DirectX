@@ -348,7 +348,7 @@ void QuadTree::_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap)
 		// 이웃노드의 4개 코너값을 얻는다.
 		n = _GetNodeIndex(i, _0, _1, _2, _3);
 		// 코너값으로 이웃노드의 포인터를 얻어온다.
-		if (n >= 0) m_pNeighbor[i] = pRoot->_FindNode(pHeightMap, _0, _1, _2, _3);
+		if (n >= 0) m_pNeighbor[i] = pRoot->FindNode(pHeightMap, _0, _1, _2, _3);
 	}
 
 	// 자식노드로 재귀호출
@@ -362,7 +362,7 @@ void QuadTree::_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap)
 }
 
 // 쿼드트리를 검색해서 4개 코너값과 일치하는 노드를 찾는다.
-QuadTree* QuadTree::_FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3)
+QuadTree* QuadTree::FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3)
 {
 	QuadTree* p = NULL;
 	// 일치하는 노드라면 노드값을 리턴
@@ -387,28 +387,28 @@ QuadTree* QuadTree::_FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, i
 			(int)pHeightMap[m_pChild[0]->m_nCorner[CORNER_BR]].p.z);
 		// pt값이 점유범위안에 있다면 자식노드로 들어간다.
 		if (MATH::IsInRect(&rc, pt))
-			return m_pChild[0]->_FindNode(pHeightMap, _0, _1, _2, _3);
+			return m_pChild[0]->FindNode(pHeightMap, _0, _1, _2, _3);
 
 		SetRect(&rc, (int)pHeightMap[m_pChild[1]->m_nCorner[CORNER_TL]].p.x,
 			(int)pHeightMap[m_pChild[1]->m_nCorner[CORNER_TL]].p.z,
 			(int)pHeightMap[m_pChild[1]->m_nCorner[CORNER_BR]].p.x,
 			(int)pHeightMap[m_pChild[1]->m_nCorner[CORNER_BR]].p.z);
 		if (MATH::IsInRect(&rc, pt))
-			return m_pChild[1]->_FindNode(pHeightMap, _0, _1, _2, _3);
+			return m_pChild[1]->FindNode(pHeightMap, _0, _1, _2, _3);
 
 		SetRect(&rc, (int)pHeightMap[m_pChild[2]->m_nCorner[CORNER_TL]].p.x,
 			(int)pHeightMap[m_pChild[2]->m_nCorner[CORNER_TL]].p.z,
 			(int)pHeightMap[m_pChild[2]->m_nCorner[CORNER_BR]].p.x,
 			(int)pHeightMap[m_pChild[2]->m_nCorner[CORNER_BR]].p.z);
 		if (MATH::IsInRect(&rc, pt))
-			return m_pChild[2]->_FindNode(pHeightMap, _0, _1, _2, _3);
+			return m_pChild[2]->FindNode(pHeightMap, _0, _1, _2, _3);
 
 		SetRect(&rc, (int)pHeightMap[m_pChild[3]->m_nCorner[CORNER_TL]].p.x,
 			(int)pHeightMap[m_pChild[3]->m_nCorner[CORNER_TL]].p.z,
 			(int)pHeightMap[m_pChild[3]->m_nCorner[CORNER_BR]].p.x,
 			(int)pHeightMap[m_pChild[3]->m_nCorner[CORNER_BR]].p.z);
 		if (MATH::IsInRect(&rc, pt))
-			return m_pChild[3]->_FindNode(pHeightMap, _0, _1, _2, _3);
+			return m_pChild[3]->FindNode(pHeightMap, _0, _1, _2, _3);
 	}
 
 	return NULL;
@@ -469,7 +469,7 @@ BOOL	QuadTree::_BuildQuadTree(TERRAIN_VTX* pHeightMap)
 	{
 		D3DXVECTOR3 v = (pHeightMap + m_nCorner[CORNER_TL])->p -
 			(pHeightMap + m_nCorner[CORNER_BR])->p;
-		(pHeightMap + m_nCenter)->p;
+
 
 		m_fRadius = D3DXVec3Length(&v) / 2.0f;
 		m_pChild[CORNER_TL]->_BuildQuadTree(pHeightMap);
@@ -480,67 +480,74 @@ BOOL	QuadTree::_BuildQuadTree(TERRAIN_VTX* pHeightMap)
 	return TRUE;
 }
 
+
+
 VOID QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VTX* pHeightMap)
 {
 	if (m_bCulled)
 	{
 		return;
 	}
-	float u, v, buf_dist;
+
 	
 	//Cull도 안되있는데 visible한 idx없다면 하위노드 탐색하자
 	if (m_VisibleIdx.size() == 0) 
 	{
+		float u, v, buf_dist;
 
-		//현재 쿼드트리 대각선 절반으로 잘라서 맞는곳 찾기
-		
-		//왼위 삼각형
-		if (D3DXIntersectTri(&pHeightMap[m_nCorner[CORNER_TL]].p, &pHeightMap[m_nCorner[CORNER_TR]].p,
-			&pHeightMap[m_nCorner[CORNER_BL]].p, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
-		{
-			if (m_pChild[CORNER_TL]) { m_pChild[CORNER_TL]->SearchInTree(ray, dist, pos, pHeightMap); }
-			if (m_pChild[CORNER_TR]) { m_pChild[CORNER_TR]->SearchInTree(ray, dist, pos, pHeightMap); }
-			if (m_pChild[CORNER_BL]) { m_pChild[CORNER_BL]->SearchInTree(ray, dist, pos, pHeightMap); }
-		}
-		//오른아래 삼각형
-		else if (D3DXIntersectTri(&pHeightMap[m_nCorner[CORNER_TR]].p, &pHeightMap[m_nCorner[CORNER_BL]].p,
-			&pHeightMap[m_nCorner[CORNER_BR]].p, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
-		{
-			if (m_pChild[CORNER_TR]) { m_pChild[CORNER_TR]->SearchInTree(ray, dist, pos, pHeightMap); }
-			if (m_pChild[CORNER_BL]) { m_pChild[CORNER_BL]->SearchInTree(ray, dist, pos, pHeightMap); }
-			if (m_pChild[CORNER_BR]) { m_pChild[CORNER_BR]->SearchInTree(ray, dist, pos, pHeightMap); }
-		}
+		//완전탐색은 확실히 된다
+		if (m_pChild[CORNER_TL]) { m_pChild[CORNER_TL]->SearchInTree(ray, dist, pos, pHeightMap); }
+		if (m_pChild[CORNER_TR]) { m_pChild[CORNER_TR]->SearchInTree(ray, dist, pos, pHeightMap); }
+		if (m_pChild[CORNER_BL]) { m_pChild[CORNER_BL]->SearchInTree(ray, dist, pos, pHeightMap); }
+		if (m_pChild[CORNER_BR]) { m_pChild[CORNER_BR]->SearchInTree(ray, dist, pos, pHeightMap); }
+
+
+
+		////자식트리 미리 검사해서 탐색량 줄이자 - 픽 안되는 삼각형도 있는데 이유모르겠음....
+		//for (int i = 0; i < 4; i++)
+		//{
+		//	if (m_pChild[i] == NULL)
+		//		continue;
+
+		//	int _0, _1, _2, _3;
+		//	m_pChild[i]->GetCorner(_0, _1, _2, _3);
+		//	D3DXVECTOR3* vt[4] = { &(pHeightMap[_0].p), &(pHeightMap[_1].p), &(pHeightMap[_2].p), &(pHeightMap[_3].p) };
+
+		//	if (D3DXIntersectTri(vt[0], vt[1], vt[2], ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist) ||
+		//		D3DXIntersectTri(vt[2], vt[1], vt[3], ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
+		//	{
+		//		printf("%d ", i);
+		//		m_pChild[i]->SearchInTree(ray, dist, pos, pHeightMap);
+	
+		//	}
+		//}
+
 	}
 	//가시화중인 삼각형 있다는것! 
 	else
 	{
-		//printf("%d\n", m_VisibleIdx.size());
+		float u, v, buf_dist;
+
 		for (unsigned int i = 0; i < m_VisibleIdx.size(); i++)
 		{
 			TRI_IDX now = m_VisibleIdx[i];
-			//printf("%d %d %d\n", now._0, now._1, now._2);
+
 			D3DXVECTOR3* v0 = &pHeightMap[now._0].p;
 			D3DXVECTOR3* v1 = &pHeightMap[now._1].p;
 			D3DXVECTOR3* v2 = &pHeightMap[now._2].p;
-			
-			
-			
+
+
 			if (D3DXIntersectTri(v0, v1, v2, ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
 			{
-				//printf("%.3f\n", buf_dist);
 				//값 갱신 - dist와 pos
 				if (0 < buf_dist && buf_dist < dist) 
 				{
-				/*	printf("%f\n", buf_dist);
-					printf("%d %.3f %.3f %f\n", now._0, v0->x, v0->y, v0->z);
-					printf("%d %.3f %.3f %f\n", now._1, v1->x, v1->y, v1->z);
-					printf("%d %.3f %.3f %f\n\n", now._2, v2->x, v2->y, v2->z);*/
-					//printf("찾음\n");
 					pos[0] = *v0;	pos[1] = *v1;	pos[2] = *v2;	dist = buf_dist;
 				}
 			}
 		}
-
 	}
+	
+
 	return;
 }

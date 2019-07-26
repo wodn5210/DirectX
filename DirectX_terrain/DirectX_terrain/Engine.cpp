@@ -13,6 +13,8 @@ Engine::~Engine()
 	delete m_CamMap;
 	delete m_tri;
 	delete m_ball;
+
+
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
 
@@ -30,6 +32,8 @@ HRESULT Engine::InitD3D(HWND hWnd)
 	GetClientRect(g_hwnd, &rc);
 	m_winSizeX = (WORD)(rc.right - rc.left);
 	m_winSizeY = (WORD)(rc.bottom - rc.top);
+	SetCursorPos(m_winSizeX/2, m_winSizeY/2);
+
 
 	D3DPRESENT_PARAMETERS d3dpp;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
@@ -59,7 +63,7 @@ HRESULT Engine::InitCam()
 {
 	// 뷰 행렬을 설정
 	m_CamMain = new CamMain(g_pd3dDevice);
-	D3DXVECTOR3 vEyePt(0.0f, 100.f, -70.0f);
+	D3DXVECTOR3 vEyePt(0.0f, 50.0f, 10.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 5.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	m_CamMain->SetView(&vEyePt, &vLookatPt, &vUpVec);	
@@ -83,8 +87,9 @@ HRESULT Engine::InitLight()
 	light.Type = D3DLIGHT_DIRECTIONAL;
 	light.Diffuse.r = 1.0f;
 	light.Diffuse.g = 1.0f;
-	light.Diffuse.b = 0.0f;
-	vecDir = D3DXVECTOR3(1, 1, 1);
+	light.Diffuse.b = 1.0f;
+	light.Diffuse.a = 1.0f;
+	//vecDir = D3DXVECTOR3(1, 1, 1);
 	vecDir = D3DXVECTOR3(cosf(GetTickCount() / 350.0f),
 		1.0f,
 		sinf(GetTickCount() / 350.0f));
@@ -115,21 +120,39 @@ HRESULT Engine::InitObj()
 	return TRUE;
 }
 
+//카메라를 움직이기전에  
 VOID Engine::_BallCameraSetup()
 {
 	D3DXVECTOR3 eye = *(m_CamMain->GetEye());			//카메라의 위치
 	D3DXVECTOR3 view = *(m_CamMain->GetvView());		//카메라의 방향벡터
 
-	D3DXVECTOR3 ballPos = eye + view * 20;
+	D3DXVECTOR3 ballPos = eye + view * 10;
 	m_ball->SetCenter(ballPos);
 	
 }
 VOID Engine::SetCameraMoveZ(float dist) 
 {
-	m_CamMain->MoveLocalZ(dist);
+	//ball camera on이면 미리 이동해서 지형과 충돌판단 해야함
 	if (g_bBallCamera)
 	{
-		_BallCameraSetup();
+		D3DXVECTOR3 vNewCenter = *(m_ball->GetCenter());
+		D3DXVECTOR3 vMove, vView;
+		D3DXVec3Normalize(&vView, m_CamMain->GetvView());
+		vMove = dist * vView;
+		vNewCenter += vMove;
+
+			
+		bool move = g_pTerrain->IsBallCollision(&vNewCenter, m_ball->GetR());
+
+		if (move)
+		{
+			m_CamMain->MoveLocalZ(dist);
+			_BallCameraSetup();
+		}
+	}
+	else
+	{
+		m_CamMain->MoveLocalZ(dist);
 	}
 };
 VOID Engine::SetCameraMoveX(float dist) 
@@ -159,6 +182,8 @@ VOID Engine::MouseMove(WORD x, WORD y)
 	//SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
 	ClientToScreen(g_hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
+
+
 	if (g_bBallCamera)
 	{
 		_BallCameraSetup();
@@ -221,8 +246,10 @@ VOID Engine::Rendering()
 	{
 		g_pTerrain->DrawMain(g_pFrustum);
 		m_ball->DrawMain();
-		if (g_bSelectTriOn)
+		if (g_bSelectTriOn) {
+
 			m_tri->DrawMain();
+		}
 
 
 		if (!g_bHideFrustum)
@@ -243,8 +270,11 @@ VOID Engine::Rendering()
 	{
 		g_pTerrain->DrawMap();
 		m_ball->DrawMap();
-		if (g_bSelectTriOn)
+		if (g_bSelectTriOn) {
 			m_tri->DrawMap();
+
+
+		}
 		
 	
 		g_pd3dDevice->EndScene();
@@ -263,6 +293,10 @@ VOID Engine::MeshPickingStart(int x, int y)
 {
 	Ray ray;
 	ray.Create(g_pd3dDevice, x, y);
+	temp[0] = *(ray.GetPos());
+	temp[1] = *(ray.GetPos()) + 200* *(ray.GetDir());
+	//printf("temp1 = %f %f %f\n", temp[0].x, temp[0].y, temp[0].z);
+	//printf("temp2 = %f %f %f\n\n", temp[1].x, temp[1].y, temp[1].z);
 
 	D3DXVECTOR3 pos[3];
 	float dist = FLT_MAX;
@@ -278,6 +312,10 @@ VOID Engine::MeshPickingStart(int x, int y)
 		m_tri->Create(pos);
 		
 		g_bSelectTriOn = TRUE;
+
+
+		//선분도 그리기
 	}
+	printf("\n\n");
 
 }

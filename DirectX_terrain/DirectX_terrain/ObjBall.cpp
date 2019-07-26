@@ -34,12 +34,13 @@ void ObjBall::DrawMap()
 HRESULT ObjBall::Create(D3DXVECTOR3 pos, float r)
 {
 	m_center = pos;
+	m_r = r;
 	D3DXMatrixIdentity(&m_translation);
 	m_translation._41 = m_center.x;
 	m_translation._42 = m_center.y;
 	m_translation._43 = m_center.z;
 
-	D3DXCreateSphere(m_device, r, 20, 20, &m_pMesh, 0);
+	D3DXCreateSphere(m_device, m_r, 20, 20, &m_pMesh, 0);
 	return S_OK;
 }
 

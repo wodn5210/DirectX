@@ -37,7 +37,7 @@ HRESULT Terrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLOD
 	{
 		return E_FAIL;
 	}
-	 
+
 	return S_OK;
 }
 
@@ -49,7 +49,7 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 
 	m_x = DIB_CX(pDIB);
 	m_z = DIB_CY(pDIB);
-	
+
 
 	// m_x나 m_z가 (2^n+1)이 아닌경우 E_FAIL을 반환
 	n = MATH::Log2(m_x);
@@ -67,6 +67,7 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 		{
 			v.p.x = (float)((x - m_x / 2) * m_scale.x);
 			v.p.z = -(float)((z - m_z / 2) * m_scale.z);
+
 			v.p.y = (float)(*(DIB_DATAXY_INV(pDIB, x, z))) * m_scale.y;
 			//m_y 최대높이
 			if (m_y < v.p.y)
@@ -79,7 +80,7 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 	}
 
 	DibDeleteHandle(pDIB);
-	
+
 	return S_OK;
 }
 HRESULT Terrain::_CreateTexture(vector<string> vFileName)
@@ -99,7 +100,7 @@ HRESULT Terrain::_CreateVIB()
 	// VB생성
 	if (FAILED(m_pd3dDevice->CreateVertexBuffer(m_x * m_z * sizeof(TERRAIN_VTX),
 		0, TERRAIN_VTX::FVF, D3DPOOL_DEFAULT, &m_pVB, NULL)))
-	{	
+	{
 		return E_FAIL;
 	}
 	if (FAILED(m_pVB->Lock(0, m_x * m_z * sizeof(TERRAIN_VTX), (void**)& pVertices, 0)))
@@ -160,7 +161,7 @@ HRESULT Terrain::_Render()
 HRESULT	Terrain::DrawMain(Frustum* pFrustum)
 {
 	VOID* pIndices;
-	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)&pIndices, 0)))
+	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pIndices, 0)))
 		return E_FAIL;
 	//쿼드 트리에서 인덱스 채우기
 	m_nTriangles = m_pQuadTree->GenerateIndex(pIndices, m_pHeightMap, pFrustum, m_fLODRatio);
@@ -172,7 +173,7 @@ HRESULT	Terrain::DrawMain(Frustum* pFrustum)
 	return S_OK;
 }
 
-HRESULT Terrain::DrawMap() 
+HRESULT Terrain::DrawMap()
 {
 	VOID* pIndices;
 	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pIndices, 0)))
@@ -209,4 +210,95 @@ VOID Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 	m_pQuadTree->SearchInTree(ray, dist, pos, m_pHeightMap);
 
 
+}
+
+BOOL Terrain::IsBallCollision(D3DXVECTOR3* center, float r)
+{
+	//intersectTri로 거리까지 계산해주니까 pos[3]는 버리면 되고 dist < r만 하면 될듯
+	WORD dx[3] = { -1, 0, 1 };
+	WORD dy[3] = { -1, 0, 1 };
+	WORD dz[3] = { -1, 0, 1 };
+
+	vector<D3DXVECTOR3> dir;
+	for (int z = 0; z < 3; z++)
+	{
+		for (int y = 0; y < 3; y++)
+		{
+			for (int x = 0; x < 3; x++)
+			{
+				//direction이 0, 0, 0은 불가능
+				if (z == 1 && y == 1 && x == 1)
+					continue;
+
+				D3DXVECTOR3 buf = D3DXVECTOR3(dx[x], dy[y], dz[z]);
+				D3DXVec3Normalize(&buf, &buf);
+				dir.push_back(buf);
+			}
+		}
+	}
+
+	int x = (int)center->x + m_x / 2;
+	int y = (int)(center->z * -1) + m_z / 2;
+	int _0 = x + y * m_z;
+
+	//맵 Index 다 구했음
+	int idx[4][4];
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			idx[i][j] = _0 + (j - 1) + (m_x) * (i - 1);
+		}
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			D3DXVECTOR3* vt[4] =
+			{ 
+				&m_pHeightMap[idx[i][j]].p,		&m_pHeightMap[idx[i][j + 1]].p,
+				&m_pHeightMap[idx[i + 1][j]].p,	&m_pHeightMap[idx[i + 1][j + 1]].p 
+			};
+
+			for (int k = 0; k < dir.size(); k++) {
+				Ray ray;
+				ray.Create(m_pd3dDevice, center, &dir[k]);
+				float u, v, dist = FLT_MAX;
+				if (D3DXIntersectTri(vt[0], vt[1], vt[2], ray.GetPos(), ray.GetDir(), &u, &v, &dist))
+				{
+					//값 갱신 - dist와 pos
+					if (0 < dist && dist < r)
+					{
+						printf("dd");
+						return false;
+					}
+				}
+
+				dist = FLT_MAX;
+				if (D3DXIntersectTri(vt[2], vt[1], vt[3], ray.GetPos(), ray.GetDir(), &u, &v, &dist))
+				{
+					//값 갱신 - dist와 pos
+					if (0 < dist && dist < r)
+					{
+						printf("dd");
+						return false;
+					}
+				}
+			}
+			
+		}
+	}
+
+
+
+	/*QuadTree* now = m_pQuadTree->FindNode(m_pHeightMap, _0, _1, _2, _3);
+	if (now != NULL)
+	{
+		printf("dd\n");
+	}*/
+	//TL, TL+1인 노드 찾고 주변 이웃 5개 찾음 (8방향에서 뒤에꺼 빼기)
+	//8방향에 대해서 27개의 방향벡터로
+
+	return true;
 }

@@ -17,7 +17,8 @@ public:
 	Ray();
 	~Ray();
 
-	VOID Create(LPDIRECT3DDEVICE9 g_pd3dDevice = NULL, int x = 0, int y = 0);
+	VOID Create(LPDIRECT3DDEVICE9 g_pd3dDevice, int x = 0, int y = 0);
+	VOID Create(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3* center, D3DXVECTOR3* view);
 	D3DXVECTOR3* GetPos() { return &m_origin; }
 	D3DXVECTOR3* GetDir() { return &m_direction; }
 private:

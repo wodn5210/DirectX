@@ -28,7 +28,13 @@ VOID Ray::Create(LPDIRECT3DDEVICE9 g_pd3dDevice, int x, int y)
 
 	_TransformRay();
 }
+VOID Ray::Create(LPDIRECT3DDEVICE9 g_pd3dDevice, D3DXVECTOR3* center, D3DXVECTOR3* view)
+{
+	this->g_pd3dDevice = g_pd3dDevice;
 
+	m_origin = *center;
+	m_direction = *view;
+}
 VOID Ray::_TransformRay()
 {
 	D3DXMATRIX view;

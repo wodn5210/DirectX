@@ -21,10 +21,19 @@ using namespace std;
 
 const string tex_dir[2] = { "src/tile2.tga", "lightmap.tga" };
 
+struct CUSTOM
+{
+	D3DXVECTOR3 pos;
+	D3DXVECTOR3 normal;
+};
+#define _FVF (D3DFVF_XYZ | D3DFVF_NORMAL)
 
 class Engine
 {
 private:
+	D3DXVECTOR3 temp[2];
+	LPDIRECT3DVERTEXBUFFER9 m_tempVB;
+
 	HWND					g_hwnd;
 	LPDIRECT3D9             g_pD3D;
 	LPDIRECT3DDEVICE9       g_pd3dDevice;
@@ -70,6 +79,8 @@ public:
 	VOID Rendering();
 
 	VOID MeshPickingStart(int x, int y);
+	VOID DrawDirection();
+
 
 	VOID SetFrustum()
 	{

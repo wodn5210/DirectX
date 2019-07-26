@@ -50,5 +50,8 @@ public:
 		m_bigScale._33 = m_scale._33 * m_big;
 	}
 
-
+	D3DXVECTOR3* GetCenter()
+	{
+		return &m_center;
+	}
 };

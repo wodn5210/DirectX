@@ -1,6 +1,7 @@
 #pragma once
 #include <d3dx9.h>
 #include <vector>
+#include <algorithm>
 
 #include "define.h"
 #include "Frustum.h"
@@ -24,7 +25,7 @@ class QuadTree
 
 private:
 
-	//트리 최대 크기
+
 	int m_x, m_y;
 
 	QuadTree* m_pChild[4];
@@ -57,7 +58,8 @@ public:
 	}
 
 	VOID SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VTX* pHeightMap);
-
+	// 쿼드트리를 검색해서 4개 코너값과 일치하는 노드를 찾는다.
+	QuadTree* FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3);
 private:
 	BOOL _SetCorners(int TL, int TR, int BL, int BR);
 	QuadTree* _AddChild(int TL, int TR, int BL, int BR);
@@ -70,13 +72,13 @@ private:
 
 	// 이웃노드를 만든다.(삼각형 찢어짐 방지용)
 	void		_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap);
-	// 쿼드트리를 검색해서 4개 코너값과 일치하는 노드를 찾는다.
-	QuadTree* _FindNode(TERRAIN_VTX* pHeightMap, int _0, int _1, int _2, int _3);
+	
 	// 4개 방향(상단,하단,좌측,우측)의 이웃노드 인덱스를 구한다.
 	int			_GetNodeIndex(int ed, int& _0, int& _1, int& _2, int& _3);
 	// 쿼드트리를 만든다.(Build()함수에서 불린다)
 	BOOL		_BuildQuadTree(TERRAIN_VTX* pHeightMap);
 
+	//QuadTree* _GetTree
 
 
 	float		_GetDistance(D3DXVECTOR3* pv1, D3DXVECTOR3* pv2)
