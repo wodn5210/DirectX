@@ -215,9 +215,9 @@ VOID Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 BOOL Terrain::IsBallCollision(D3DXVECTOR3* center, float r)
 {
 	//intersectTri로 거리까지 계산해주니까 pos[3]는 버리면 되고 dist < r만 하면 될듯
-	WORD dx[3] = { -1, 0, 1 };
-	WORD dy[3] = { -1, 0, 1 };
-	WORD dz[3] = { -1, 0, 1 };
+	float dx[3] = { -1, 0, 1 };
+	float dy[3] = { -1, 0, 1 };
+	float dz[3] = { -1, 0, 1 };
 
 	vector<D3DXVECTOR3> dir;
 	for (int z = 0; z < 3; z++)
