@@ -493,34 +493,11 @@ VOID QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VT
 	//Cull도 안되있는데 visible한 idx없다면 하위노드 탐색하자
 	if (m_VisibleIdx.size() == 0) 
 	{
-		float u, v, buf_dist;
-
 		//완전탐색은 확실히 된다
 		if (m_pChild[CORNER_TL]) { m_pChild[CORNER_TL]->SearchInTree(ray, dist, pos, pHeightMap); }
 		if (m_pChild[CORNER_TR]) { m_pChild[CORNER_TR]->SearchInTree(ray, dist, pos, pHeightMap); }
 		if (m_pChild[CORNER_BL]) { m_pChild[CORNER_BL]->SearchInTree(ray, dist, pos, pHeightMap); }
 		if (m_pChild[CORNER_BR]) { m_pChild[CORNER_BR]->SearchInTree(ray, dist, pos, pHeightMap); }
-
-
-
-		////자식트리 미리 검사해서 탐색량 줄이자 - 픽 안되는 삼각형도 있는데 이유모르겠음....
-		//for (int i = 0; i < 4; i++)
-		//{
-		//	if (m_pChild[i] == NULL)
-		//		continue;
-
-		//	int _0, _1, _2, _3;
-		//	m_pChild[i]->GetCorner(_0, _1, _2, _3);
-		//	D3DXVECTOR3* vt[4] = { &(pHeightMap[_0].p), &(pHeightMap[_1].p), &(pHeightMap[_2].p), &(pHeightMap[_3].p) };
-
-		//	if (D3DXIntersectTri(vt[0], vt[1], vt[2], ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist) ||
-		//		D3DXIntersectTri(vt[2], vt[1], vt[3], ray.GetPos(), ray.GetDir(), &u, &v, &buf_dist))
-		//	{
-		//		printf("%d ", i);
-		//		m_pChild[i]->SearchInTree(ray, dist, pos, pHeightMap);
-	
-		//	}
-		//}
 
 	}
 	//가시화중인 삼각형 있다는것! 

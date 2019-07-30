@@ -12,7 +12,7 @@ protected:
 	WORD m_fvf;
 	D3DXMATRIXA16 m_matWorld, m_translation, m_rotation, m_scale, m_bigScale;
 	D3DXVECTOR3 m_center;
-
+	//m_translation의 x, y, z이동부분이 센터라고봐야함
 public:
 	ObjGraphic()
 	{
@@ -26,12 +26,15 @@ public:
 		m_bigScale._33 = m_scale._33 * m_big;
 	}
 	virtual void DrawMain() = 0;
-	virtual void DrawMap() = 0;
+	void DrawMap();
 
 
 	void SetTranslation(D3DXMATRIXA16& translation)
 	{
 		m_translation = translation;
+		m_center.x = translation._41;
+		m_center.y = translation._42;
+		m_center.z = translation._43;
 	}
 	void SetCenter(D3DXVECTOR3& center)
 	{
@@ -43,7 +46,7 @@ public:
 	}
 	void SetScale(D3DXMATRIXA16& scale)
 	{
-		D3DXMatrixIdentity(&m_translation);
+		D3DXMatrixIdentity(&m_scale);
 		m_scale = scale;
 		m_bigScale._11 = m_scale._11 * m_big;
 		m_bigScale._22 = m_scale._22 * m_big;

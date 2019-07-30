@@ -49,8 +49,10 @@ public:
 	HRESULT		DrawMap();
 
 	VOID MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3]);
-	BOOL IsBallCollision(D3DXVECTOR3* center, float r);
 
+	float GetHeight(D3DXVECTOR3* center, D3DXVECTOR3 pos[3]);
+	int GetX() { return m_x; };
+	int GetZ() { return m_z; };
 private:
 	HRESULT _CreateHeightMap(string fileName);
 	HRESULT _CreateTexture(vector<string> vFileName);

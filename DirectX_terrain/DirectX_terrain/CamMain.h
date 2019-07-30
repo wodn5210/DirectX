@@ -28,7 +28,8 @@ public:
 	VOID MoveLocalY(float dist);
 	VOID MoveLocalZ(float dist);
 
-	void ResetView() { 
+	void ResetView() 
+	{ 
 		SetView(&m_vEye, &m_vLookat, &m_vUp); 
 		m_device->SetViewport(&m_vp);
 	};

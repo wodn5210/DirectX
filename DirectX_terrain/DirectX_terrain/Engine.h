@@ -12,9 +12,11 @@
 #include "CamMiniMap.h"
 #include "ObjTriangle.h"
 #include "ObjBall.h"
+#include "ObjSkyBox.h"
 #include "Frustum.h"
 #include "Terrain.h"
 #include "Ray.h"
+
 
 using namespace std;
 
@@ -45,6 +47,8 @@ private:
 	//클릭한 삼각형 출력용
 	ObjTriangle* m_tri;
 	ObjBall* m_ball;
+	ObjSkyBox* m_skybox;
+
 
 	CamMain* m_CamMain;
 	CamMiniMap* m_CamMap;
@@ -104,7 +108,9 @@ public:
 
 	VOID MouseMove(WORD x, WORD y);
 	
-
+	VOID SetBallAccAdd(D3DXVECTOR3 acc) { m_ball->SetBallAccAdd(acc); }
+	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_ball->SetBallSpdAdd(spd); }
+	
 
 };
 

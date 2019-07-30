@@ -3,8 +3,8 @@
 
 #include "Engine.h"
 
-#define HEIGHT 768
-#define WIDTH 1024
+#define HEIGHT 800
+#define WIDTH 800
 #pragma warning(disable:4996)
 #define START_CONSOLE() {AllocConsole();  freopen("CONOUT$", "w", stdout); freopen("CONIN$", "r", stdin);}
 #define STOP_CONSOLE()  {FreeConsole();}
@@ -38,23 +38,44 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_F4:
 			engine.SetBallCamera();
 			break;
+		case VK_LEFT:
+
+			break;
+
+		case VK_RIGHT:
+
+			break;
 		case 'A':
 			engine.SetCameraMoveX(-0.5f);
-			break;
+			//engine.SetBallAccAdd(D3DXVECTOR3(-0.005f, 0, 0));
+			//engine.SetBallSpdAdd(D3DXVECTOR3(-0.05f, 0, 0));
+			break;                     
 		case 'D':
 			engine.SetCameraMoveX(0.5f);
+		//	engine.SetBallAccAdd(D3DXVECTOR3(0.005f, 0, 0));
+			//engine.SetBallSpdAdd(D3DXVECTOR3(0.05f, 0, 0));
 			break;
 		case 'W':
 			engine.SetCameraMoveZ(0.5f);
+			//engine.SetBallAccAdd(D3DXVECTOR3(0, 0, 0.005f));
+			//engine.SetBallSpdAdd(D3DXVECTOR3(0, 0, 0.05f));
 			break;
 		case 'S':
 			engine.SetCameraMoveZ(-0.5f);
+			//engine.SetBallAccAdd(D3DXVECTOR3(0, 0, -0.005f));
+			//engine.SetBallSpdAdd(D3DXVECTOR3(0, 0, -0.05f));
+			break;
+		case VK_SPACE:
+			//engine.SetCameraMoveZ(-0.5f);
+			//engine.SetBallAccAdd(D3DXVECTOR3(0, 0.005f, 0));
+			//engine.SetBallSpdAdd(D3DXVECTOR3(0, 0.1f, 0));
 			break;
 		}
 		break;
 
 	case WM_MOUSEMOVE:
-		engine.MouseMove(LOWORD(lParam), HIWORD(lParam));
+		//잠시 마우스 기능 끄자
+		//engine.MouseMove(LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_LBUTTONDOWN:
 		engine.MeshPickingStart(LOWORD(lParam), HIWORD(lParam));
@@ -81,15 +102,15 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 
 	//크기조절 불가
 	HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
-		WS_MINIMIZEBOX | WS_SYSMENU, 200, 50, WIDTH, HEIGHT,
+		WS_MINIMIZEBOX | WS_SYSMENU, 200, 20, WIDTH, HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	START_CONSOLE();  //// 디버그 콘솔 시작
 	
 	if (SUCCEEDED(engine.InitD3D(hWnd)) &&
-		SUCCEEDED(engine.InitObj()) &&
+		SUCCEEDED(engine.InitCam()) &&
 		SUCCEEDED(engine.InitLight())&&
-		SUCCEEDED(engine.InitCam()))
+		SUCCEEDED(engine.InitObj()))
 	{
 
 		ShowWindow(hWnd, SW_SHOWDEFAULT);

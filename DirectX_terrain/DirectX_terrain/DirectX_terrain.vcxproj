@@ -156,6 +156,7 @@
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ObjBall.cpp" />
+    <ClCompile Include="ObjSkyBox.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="ObjBall.h" />
     <ClInclude Include="ObjGraphic.h" />
+    <ClInclude Include="ObjSkyBox.h" />
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Terrain.h" />

@@ -156,6 +156,7 @@ HRESULT Terrain::_Render()
 	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_x * m_z, 0, m_nTriangles);
 
 	m_pd3dDevice->SetTexture(0, NULL);
+	m_pd3dDevice->SetTexture(1, NULL);
 	return S_OK;
 }
 HRESULT	Terrain::DrawMain(Frustum* pFrustum)
@@ -212,93 +213,45 @@ VOID Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 
 }
 
-BOOL Terrain::IsBallCollision(D3DXVECTOR3* center, float r)
+
+float Terrain::GetHeight(D3DXVECTOR3* center, D3DXVECTOR3 pos[3])
 {
-	//intersectTri로 거리까지 계산해주니까 pos[3]는 버리면 되고 dist < r만 하면 될듯
-	float dx[3] = { -1, 0, 1 };
-	float dy[3] = { -1, 0, 1 };
-	float dz[3] = { -1, 0, 1 };
+	float x = center->x + m_x / 2;
+	float z = (center->z * -1) + m_z / 2;
 
-	vector<D3DXVECTOR3> dir;
-	for (int z = 0; z < 3; z++)
+
+	int id_x[4] = { (int)x, (int)x + 1, (int)x, (int)x + 1 };
+	int id_z[4] = { (int)z, (int)z, (int)z + 1, (int)z + 1 };
+
+	D3DXVECTOR3* vt[4] =
 	{
-		for (int y = 0; y < 3; y++)
-		{
-			for (int x = 0; x < 3; x++)
-			{
-				//direction이 0, 0, 0은 불가능
-				if (z == 1 && y == 1 && x == 1)
-					continue;
+		&m_pHeightMap[id_x[0] + id_z[0] * m_x].p,	&m_pHeightMap[id_x[1] + id_z[1] * m_x].p,
+		&m_pHeightMap[id_x[2] + id_z[2] * m_x].p,	&m_pHeightMap[id_x[3] + id_z[3] * m_x].p
+	};
 
-				D3DXVECTOR3 buf = D3DXVECTOR3(dx[x], dy[y], dz[z]);
-				D3DXVec3Normalize(&buf, &buf);
-				dir.push_back(buf);
-			}
-		}
+	float dx = x - (int)x;
+	float dz = z - (int)z;
+
+	float height;
+
+	//위쪽 삼각형 그리자
+	if (dz < 1.0f - dx)
+	{
+		float uy = vt[1]->y - vt[0]->y;
+		float vy = vt[2]->y - vt[0]->y;
+
+		height = vt[0]->y + MATH::Lerp(0.0f, uy, dx) + MATH::Lerp(0.0f, vy, dz);
+		pos[0] = *vt[0];	pos[1] = *vt[1];	pos[2] = *vt[2];
+	}
+	else
+	{
+		float uy = vt[2]->y - vt[3]->y;
+		float vy = vt[1]->y - vt[3]->y;
+
+		height = vt[3]->y + MATH::Lerp(0.0f, uy, 1.0f - dx) + MATH::Lerp(0.0f, vy, 1.0f - dz);
+		pos[0] = *vt[2];	pos[1] = *vt[1];	pos[2] = *vt[3];
 	}
 
-	int x = (int)center->x + m_x / 2;
-	int y = (int)(center->z * -1) + m_z / 2;
-	int _0 = x + y * m_z;
-
-	//맵 Index 다 구했음
-	int idx[4][4];
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			idx[i][j] = _0 + (j - 1) + (m_x) * (i - 1);
-		}
-	}
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			D3DXVECTOR3* vt[4] =
-			{ 
-				&m_pHeightMap[idx[i][j]].p,		&m_pHeightMap[idx[i][j + 1]].p,
-				&m_pHeightMap[idx[i + 1][j]].p,	&m_pHeightMap[idx[i + 1][j + 1]].p 
-			};
-
-			for (int k = 0; k < dir.size(); k++) {
-				Ray ray;
-				ray.Create(m_pd3dDevice, center, &dir[k]);
-				float u, v, dist = FLT_MAX;
-				if (D3DXIntersectTri(vt[0], vt[1], vt[2], ray.GetPos(), ray.GetDir(), &u, &v, &dist))
-				{
-					//값 갱신 - dist와 pos
-					if (0 < dist && dist < r)
-					{
-						printf("dd");
-						return false;
-					}
-				}
-
-				dist = FLT_MAX;
-				if (D3DXIntersectTri(vt[2], vt[1], vt[3], ray.GetPos(), ray.GetDir(), &u, &v, &dist))
-				{
-					//값 갱신 - dist와 pos
-					if (0 < dist && dist < r)
-					{
-						printf("dd");
-						return false;
-					}
-				}
-			}
-			
-		}
-	}
-
-
-
-	/*QuadTree* now = m_pQuadTree->FindNode(m_pHeightMap, _0, _1, _2, _3);
-	if (now != NULL)
-	{
-		printf("dd\n");
-	}*/
-	//TL, TL+1인 노드 찾고 주변 이웃 5개 찾음 (8방향에서 뒤에꺼 빼기)
-	//8방향에 대해서 27개의 방향벡터로
-
-	return true;
+	//float A = 
+	return height;
 }

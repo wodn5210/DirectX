@@ -1,4 +1,8 @@
 #pragma once
+#define GRAVITY 0.0098f
+#define PI 3.141592f
+#include <vector>
+
 
 struct TERRAIN_VTX
 {
@@ -11,6 +15,13 @@ struct TRI_IDX
 {
 	WORD _0, _1, _2;
 };
+struct SKY_VTX
+{
+	enum _FVF { FVF = (D3DFVF_XYZ| D3DFVF_TEX1) };
+	D3DXVECTOR3	p;
+	D3DXVECTOR2	t;
+};
+
 
 class MATH {
 public:
@@ -47,5 +58,10 @@ public:
 		int val = 1;
 		val = val << n;
 		return val;
+	}
+
+	static float Lerp(float a, float b, float t)
+	{
+		return a - (a * t) + (b * t);
 	}
 };

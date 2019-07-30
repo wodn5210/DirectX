@@ -63,8 +63,9 @@ HRESULT Engine::InitCam()
 {
 	// 뷰 행렬을 설정
 	m_CamMain = new CamMain(g_pd3dDevice);
-	D3DXVECTOR3 vEyePt(0.0f, 50.0f, 10.0f);
-	D3DXVECTOR3 vLookatPt(0.0f, 5.0f, 0.0f);
+	//D3DXVECTOR3 vEyePt(50.0f, 50.0f, 50.0f);
+	D3DXVECTOR3 vEyePt(0.0f, 30.0f, -50.0f);
+	D3DXVECTOR3 vLookatPt(0.0f, 20.0f, 20.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	m_CamMain->SetView(&vEyePt, &vLookatPt, &vUpVec);	
 	m_CamMain->SetViewport(D3DVIEWPORT9{ 0, 0, m_winSizeX, m_winSizeY, 0, 1 });
@@ -110,13 +111,20 @@ HRESULT Engine::InitObj()
 	tex_file_dir.push_back("src/tile2.tga");
 	tex_file_dir.push_back("src/lightmap.tga");
 	g_pTerrain = new Terrain;
-	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 0.1f,
-		"src/map129.bmp", tex_file_dir);
+	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 
+		0.1f, "src/map129.bmp", tex_file_dir);
 
 	g_pFrustum = new Frustum(g_pd3dDevice);
 	m_tri = new ObjTriangle(g_pd3dDevice);
-	m_ball = new ObjBall(g_pd3dDevice);
-	m_ball->Create(D3DXVECTOR3(0, 20, 0), 1);
+	m_ball = new ObjBall(g_pd3dDevice, g_pTerrain);
+	
+	m_ball->Create(D3DXVECTOR3(0, 10, 20), 0.01);
+	
+	m_skybox = new ObjSkyBox(g_pd3dDevice);
+	m_skybox->Create();
+
+	/*D3DXVECTOR3* cam = m_CamMain->GetEye();
+*/
 	return TRUE;
 }
 
@@ -129,39 +137,17 @@ VOID Engine::_BallCameraSetup()
 	D3DXVECTOR3 ballPos = eye + view * 10;
 	m_ball->SetCenter(ballPos);
 	
+	
 }
 VOID Engine::SetCameraMoveZ(float dist) 
 {
-	//ball camera on이면 미리 이동해서 지형과 충돌판단 해야함
-	if (g_bBallCamera)
-	{
-		D3DXVECTOR3 vNewCenter = *(m_ball->GetCenter());
-		D3DXVECTOR3 vMove, vView;
-		D3DXVec3Normalize(&vView, m_CamMain->GetvView());
-		vMove = dist * vView;
-		vNewCenter += vMove;
 
-			
-		bool move = g_pTerrain->IsBallCollision(&vNewCenter, m_ball->GetR());
+	m_CamMain->MoveLocalZ(dist);
 
-		if (move)
-		{
-			m_CamMain->MoveLocalZ(dist);
-			_BallCameraSetup();
-		}
-	}
-	else
-	{
-		m_CamMain->MoveLocalZ(dist);
-	}
 };
 VOID Engine::SetCameraMoveX(float dist) 
 {
 	m_CamMain->MoveLocalX(dist);
-	if (g_bBallCamera)
-	{
-		_BallCameraSetup();
-	}
 };
 VOID Engine::MouseMove(WORD x, WORD y)
 {
@@ -184,10 +170,6 @@ VOID Engine::MouseMove(WORD x, WORD y)
 	SetCursorPos(pt.x, pt.y);
 
 
-	if (g_bBallCamera)
-	{
-		_BallCameraSetup();
-	}
 }
 
 VOID Engine::_SetBillBoard()
@@ -213,7 +195,20 @@ VOID Engine::RenderReady()
 	//빛 설정
 	InitLight();
 
+	//볼 움직임 
 
+	m_ball->MovePhysical();
+	if (g_bBallCamera)
+	{
+		//m_ball->MovePhysical();
+		D3DXVECTOR3 newEye = *(m_ball->GetCenter()) + D3DXVECTOR3(0, 1, -2);
+		D3DXVECTOR3 newLookat = *(m_ball->GetCenter()) + D3DXVECTOR3(0, 0, 0);
+		m_CamMain->SetView(&newEye, &newLookat, &D3DXVECTOR3(0, 1, 0));
+
+	}
+	
+
+	
 	//프러스텀 효과 가시화하기위한것.
 	//막히면 마지막으로 설정되었던 프러스텀효과를 보여준다
 	if (!g_bLockFrustum)
@@ -236,6 +231,9 @@ VOID Engine::Rendering()
 	RenderReady();	
 	
 
+	
+
+
 	//메인 렌더링
 	m_CamMain->ResetView();
 
@@ -246,6 +244,8 @@ VOID Engine::Rendering()
 	{
 		g_pTerrain->DrawMain(g_pFrustum);
 		m_ball->DrawMain();
+
+		m_skybox->DrawMain();
 		if (g_bSelectTriOn) {
 
 			m_tri->DrawMain();
