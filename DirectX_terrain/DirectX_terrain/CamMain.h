@@ -8,8 +8,11 @@ private:
 	D3DXVECTOR3		m_vView;
 	D3DXVECTOR3		m_vCross;
 
-	D3DXMATRIXA16	m_matBill;
 
+
+	D3DXVECTOR3 m_ballEye;
+	D3DXVECTOR3* m_pBallPos;
+	
 
 public:
 	CamMain(LPDIRECT3DDEVICE9 m_device);
@@ -34,7 +37,20 @@ public:
 		m_device->SetViewport(&m_vp);
 	};
 
-	D3DXMATRIXA16* GetBillMatrix() { return &m_matBill; }
+	void ResetBallView()
+	{
+		SetView(&(m_ballEye + *m_pBallPos), m_pBallPos, &m_vUp);
+		m_device->SetViewport(&m_vp);
+		//m_ballEye = D3DXVECTOR3(0, 1, -2);
+
+	};
+
 	D3DXVECTOR3* GetvView() { return &m_vView; }
+
+
+	VOID SetBallView(D3DXVECTOR3* pvUp);
+	VOID SetBallViewRotateY(float angle);
+	VOID SetBallPosP(D3DXVECTOR3* pBallPos) { m_pBallPos = pBallPos; };
+	
 };
 

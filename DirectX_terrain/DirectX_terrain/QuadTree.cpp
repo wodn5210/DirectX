@@ -113,8 +113,6 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	// 컬링된 노드라면 그냥 리턴 - 화면 밖이라 그릴 필요가 없다
 	if (m_bCulled)
 	{
-		m_bCulled = FALSE;
-
 		return nTris;
 	}
 
@@ -122,6 +120,7 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	//출력이 불가능하다는것은 거리가 가까워서 더 미세한 레벨의 Mesh로 렌더링 해야한다는것
 	if (_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio))
 	{
+		
 		unsigned short* p = ((unsigned short*)pIndex) + nTris * 3;
 
 		// 만약 최하위 노드라면 부분분할(subdivide)이 불가능하므로 그냥 출력하고 리턴한다.
@@ -252,6 +251,7 @@ BOOL QuadTree::Create(TERRAIN_VTX* pHeightMap)
 
 int QuadTree::GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio)
 {
+	_InitAllCulled();
 	_FrustumCull(pHeightMap, pFrustum);
 	return _GenTriIndex(0, pIb, pHeightMap, pFrustum, fLODRatio);
 }
@@ -527,4 +527,19 @@ VOID QuadTree::SearchInTree(Ray ray, float& dist, D3DXVECTOR3 pos[3], TERRAIN_VT
 	
 
 	return;
+}
+
+
+VOID QuadTree::_InitAllCulled()
+{
+	if (m_bCulled)
+	{
+		m_bCulled = FALSE;
+		return;
+	}
+	if (m_pChild[CORNER_TL]) m_pChild[CORNER_TL]->_InitAllCulled();
+	if (m_pChild[CORNER_TR]) m_pChild[CORNER_TR]->_InitAllCulled();
+	if (m_pChild[CORNER_BL]) m_pChild[CORNER_BL]->_InitAllCulled();
+	if (m_pChild[CORNER_BR]) m_pChild[CORNER_BR]->_InitAllCulled();
+
 }

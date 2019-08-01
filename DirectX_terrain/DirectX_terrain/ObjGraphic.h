@@ -25,7 +25,7 @@ public:
 		m_bigScale._22 = m_scale._22 * m_big;
 		m_bigScale._33 = m_scale._33 * m_big;
 	}
-	virtual void DrawMain() = 0;
+	void DrawMain();
 	void DrawMap();
 
 
@@ -51,6 +51,10 @@ public:
 		m_bigScale._11 = m_scale._11 * m_big;
 		m_bigScale._22 = m_scale._22 * m_big;
 		m_bigScale._33 = m_scale._33 * m_big;
+	}
+	void SetRotate(D3DXMATRIXA16* rotate)
+	{
+		m_rotation = *rotate;
 	}
 
 	D3DXVECTOR3* GetCenter()

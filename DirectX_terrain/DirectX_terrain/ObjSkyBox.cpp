@@ -124,11 +124,11 @@ HRESULT ObjSkyBox::_InitIB()
 }
 HRESULT ObjSkyBox::_InitTXT()
 {
-	if (FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Front.bmp", &m_pTex[0])) ||
-		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Left.bmp", &m_pTex[1])) ||
-		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Back.bmp", &m_pTex[2])) ||
+	if (FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Front.bmp",	&m_pTex[0])) ||
+		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Left.bmp",	&m_pTex[1])) ||
+		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Back.bmp",	&m_pTex[2])) ||
 		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Right.bmp", &m_pTex[3])) ||
-		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Top.bmp", &m_pTex[4])) || 		 
+		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Top.bmp",	 &m_pTex[4])) || 		 
 		FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/Skybox/Bottom.bmp", &m_pTex[5]))) 
 	{
 		return E_FAIL;

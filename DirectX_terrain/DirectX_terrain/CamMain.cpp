@@ -3,6 +3,8 @@
 CamMain::CamMain(LPDIRECT3DDEVICE9 device)
 {
 	m_device = device;
+	m_ballEye = D3DXVECTOR3(3, 1, 0);
+	
 }
 
 VOID CamMain::SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVECTOR3* pvUp)
@@ -15,10 +17,7 @@ VOID CamMain::SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVECTOR3* pv
 	D3DXVec3Normalize(&m_vView, &(m_vLookat - m_vEye));
 	D3DXVec3Cross(&m_vCross, &m_vUp, &m_vView);
 
-	D3DXMatrixInverse(&m_matBill, NULL, &m_matView);
-	m_matBill._41 = 0.0f;
-	m_matBill._42 = 0.0f;
-	m_matBill._43 = 0.0f;
+
 }
 
 // 카메라 좌표계의 X축으로 angle만큼 회전한다.
@@ -29,8 +28,6 @@ VOID CamMain::RotateLocalX(float angle)
 
 	D3DXVECTOR3 vNewDst, vNewUp;
 	D3DXVec3TransformCoord(&vNewDst, &m_vView, &matRot);	// view * rot로 새로운 dst vector를 구한다.
-//	D3DXVec3Cross( &vNewUp, &vNewDst, &m_vCross );			// cross( dst, x축)으로 up vector를 구한다.
-//	D3DXVec3Normalize( &vNewUp, &vNewUp );					// up vector를 unit vector로...
 	vNewDst += m_vEye;										// 실제 dst position =  eye Position + dst vector
 
 	SetView(&m_vEye, &vNewDst, &m_vUp);
@@ -102,4 +99,26 @@ VOID CamMain::MoveTo(D3DXVECTOR3* pv)
 	m_vLookat += dv;
 
 	SetView(&m_vEye, &m_vLookat, &m_vUp);
+}
+
+
+/*
+m_vEye = ball위치 + m_ballEye
+*/
+VOID CamMain::SetBallView(D3DXVECTOR3* pvUp)
+{
+
+	SetView(&(*m_pBallPos + m_ballEye), m_pBallPos, pvUp);
+}
+
+// 카메라 좌표계의 Y축으로 angle만큼 회전한다.
+VOID CamMain::SetBallViewRotateY(float angle) 
+{
+	D3DXMATRIXA16 matRot;
+	D3DXMatrixRotationAxis(&matRot, &m_vUp, angle);
+
+	D3DXVECTOR3 vNewDst;
+	D3DXVec3TransformCoord(&m_ballEye, &m_ballEye, &matRot);	//y축 기준으로 ballEye 회전시킴
+
+	SetView(&(*m_pBallPos + m_ballEye), m_pBallPos, &D3DXVECTOR3(0, 1, 0));
 }

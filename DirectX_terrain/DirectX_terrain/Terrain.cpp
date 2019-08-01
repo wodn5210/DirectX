@@ -38,6 +38,7 @@ HRESULT Terrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLOD
 		return E_FAIL;
 	}
 
+
 	return S_OK;
 }
 
@@ -59,7 +60,7 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 
 
 	m_pHeightMap = new TERRAIN_VTX[m_x * m_z];
-
+	
 	TERRAIN_VTX v;
 	for (int z = 0; z < m_z; z++)
 	{

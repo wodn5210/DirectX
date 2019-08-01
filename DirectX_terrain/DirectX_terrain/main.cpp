@@ -1,6 +1,6 @@
 
 #include <d3d9.h>
-
+#include <time.h>
 #include "Engine.h"
 
 #define HEIGHT 800
@@ -11,7 +11,9 @@
 
 
 Engine engine;
-
+bool g_bBallCamera = false;
+float energy;
+time_t sT = 0, eT = 0;
 
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -36,59 +38,89 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			engine.SetSelectOff();
 			break;
 		case VK_F4:
+			g_bBallCamera = !g_bBallCamera;
 			engine.SetBallCamera();
 			break;
-		case VK_LEFT:
 
+		case VK_LEFT:			
+			if (g_bBallCamera)
+				engine.SetBallCamRotateY(-0.1f);
 			break;
 
 		case VK_RIGHT:
-
+			if (g_bBallCamera)
+				engine.SetBallCamRotateY(0.1f);
 			break;
 		case 'A':
-			engine.SetCameraMoveX(-0.5f);
-			//engine.SetBallAccAdd(D3DXVECTOR3(-0.005f, 0, 0));
-			//engine.SetBallSpdAdd(D3DXVECTOR3(-0.05f, 0, 0));
+			if(g_bBallCamera)
+				engine.SetBallSpdAdd(D3DXVECTOR3(-0.05f, 0, 0));
+			else
+				engine.SetCameraMoveX(-0.5f);
+
 			break;                     
 		case 'D':
-			engine.SetCameraMoveX(0.5f);
-		//	engine.SetBallAccAdd(D3DXVECTOR3(0.005f, 0, 0));
-			//engine.SetBallSpdAdd(D3DXVECTOR3(0.05f, 0, 0));
+			if (g_bBallCamera)
+				engine.SetBallSpdAdd(D3DXVECTOR3(0.05f, 0, 0));
+			else
+				engine.SetCameraMoveX(0.5f);
 			break;
 		case 'W':
-			engine.SetCameraMoveZ(0.5f);
-			//engine.SetBallAccAdd(D3DXVECTOR3(0, 0, 0.005f));
-			//engine.SetBallSpdAdd(D3DXVECTOR3(0, 0, 0.05f));
+			if (g_bBallCamera)
+				engine.SetBallSpdAdd(D3DXVECTOR3(0, 0, 0.05f));
+			else
+				engine.SetCameraMoveZ(0.5f);
 			break;
 		case 'S':
-			engine.SetCameraMoveZ(-0.5f);
-			//engine.SetBallAccAdd(D3DXVECTOR3(0, 0, -0.005f));
-			//engine.SetBallSpdAdd(D3DXVECTOR3(0, 0, -0.05f));
+			if (g_bBallCamera)
+				engine.SetBallSpdAdd(D3DXVECTOR3(0, 0, -0.05f));
+			else
+				engine.SetCameraMoveZ(-0.5f);
 			break;
 		case VK_SPACE:
-			//engine.SetCameraMoveZ(-0.5f);
-			//engine.SetBallAccAdd(D3DXVECTOR3(0, 0.005f, 0));
-			//engine.SetBallSpdAdd(D3DXVECTOR3(0, 0.1f, 0));
+			if(sT == 0 && eT == 0)
+				sT = clock();
+			
 			break;
 		}
 		break;
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case VK_SPACE:
+			eT = clock();
+			energy = (float)(eT - sT) / (CLOCKS_PER_SEC*5);
+			printf("energy = %f\n", energy);
+			sT = eT = 0;
+			engine.SetBallJump(energy);
 
+			break;
+		}
+		break;
 	case WM_MOUSEMOVE:
-		//잠시 마우스 기능 끄자
-		//engine.MouseMove(LOWORD(lParam), HIWORD(lParam));
+
+		if (!g_bBallCamera)
+			engine.MouseMove(LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_LBUTTONDOWN:
-		engine.MeshPickingStart(LOWORD(lParam), HIWORD(lParam));
-		//printf("x: %d y: %d\n", LOWORD(lParam), HIWORD(lParam));
+		if (g_bBallCamera)
+			engine.SetBallCamRotateY(-0.1f);
+		else
+			engine.MeshPickingStart(LOWORD(lParam), HIWORD(lParam));
+
 		break;
+	case WM_RBUTTONDOWN:
+		if (g_bBallCamera)
+			engine.SetBallCamRotateY(0.1f);
+		break;
+
 	}
 	
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
+
 
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 					  GetModuleHandle(NULL), NULL, NULL, NULL, NULL,

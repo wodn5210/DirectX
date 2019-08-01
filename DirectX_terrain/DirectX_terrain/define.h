@@ -2,9 +2,16 @@
 #define GRAVITY 0.0098f
 #define PI 3.141592f
 #include <vector>
-
+#include <string>
 
 struct TERRAIN_VTX
+{
+	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1) };
+	D3DXVECTOR3	p;
+	D3DXVECTOR3	n;
+	D3DXVECTOR2	t;
+};
+struct BALL_VTX
 {
 	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1) };
 	D3DXVECTOR3	p;
@@ -21,7 +28,23 @@ struct SKY_VTX
 	D3DXVECTOR3	p;
 	D3DXVECTOR2	t;
 };
+struct TREE_VTX
+{
+	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_TEX1) };
+	D3DXVECTOR3	p;
+	D3DXVECTOR2	t;
+};
 
+struct BAR_VTX
+{
+	enum _FVF { FVF = (D3DFVF_XYZ) };
+	D3DXVECTOR3	p;
+};
+
+
+	BAR_VTX vtx = {
+		{}
+	};
 
 class MATH {
 public:

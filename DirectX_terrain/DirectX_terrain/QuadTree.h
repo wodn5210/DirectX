@@ -100,4 +100,6 @@ private:
 		int lv = _GetLODLevel(pHeightMap, pCamera, fLODRatio);
 		return ((m_nCorner[CORNER_TR] - m_nCorner[CORNER_TL]) <= lv);
 	}
+
+	VOID _InitAllCulled();
 };

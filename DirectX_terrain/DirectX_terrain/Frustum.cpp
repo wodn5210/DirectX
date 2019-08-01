@@ -16,16 +16,21 @@ Frustum::Frustum(LPDIRECT3DDEVICE9 pDev)
 	m_projVTX[6].x = 1.0f;		m_projVTX[6].y = 1.0f;		m_projVTX[6].z = 1.0f;
 	m_projVTX[7].x = -1.0f;		m_projVTX[7].y = 1.0f;		m_projVTX[7].z = 1.0f;
 
-	InitIB();
+	//InitIB();
 
 	ZeroMemory(m_plane, sizeof(m_plane[0]) * 6);
 
 }
 
 
-
-HRESULT Frustum::InitIB()
+HRESULT Frustum::Init()
 {
+	if (FAILED(g_pd3dDevice->CreateVertexBuffer(8 * sizeof(D3DXVECTOR3),
+		0, Frustum::_FVF, D3DPOOL_DEFAULT, &g_pVB, NULL)))
+	{
+		return E_FAIL;
+	}
+
 	FRS_IDX indices[] =
 	{
 	{0, 1, 2}, {0, 2, 3},
@@ -44,6 +49,7 @@ HRESULT Frustum::InitIB()
 	}
 
 	VOID* pIndices;
+
 	if (FAILED(g_pIB->Lock(0, sizeof(indices), (void**)& pIndices, 0)))
 	{
 		return E_FAIL;
@@ -52,14 +58,12 @@ HRESULT Frustum::InitIB()
 	g_pIB->Unlock();
 	return S_OK;
 }
-HRESULT Frustum::InitVB()
-{
-	if (FAILED(g_pd3dDevice->CreateVertexBuffer(8 * sizeof(D3DXVECTOR3),
-		0, Frustum::_FVF, D3DPOOL_DEFAULT, &g_pVB, NULL)))
-	{
-		return E_FAIL;
-	}
 
+
+
+
+HRESULT Frustum::FillVB()
+{
 	// Fill the vertex buffer.
 	VOID* pVertices;
 	if (FAILED(g_pVB->Lock(0, sizeof(m_vtx), (void**)& pVertices, 0)))
@@ -67,6 +71,7 @@ HRESULT Frustum::InitVB()
 		return E_FAIL;
 	}
 	memcpy(pVertices, m_vtx, sizeof(m_vtx));
+
 	g_pVB->Unlock();
 
 	return S_OK;
@@ -104,7 +109,7 @@ BOOL Frustum::Make(D3DXMATRIXA16* pmatViewProj, D3DXVECTOR3* pos)
 	D3DXPlaneFromPoints(&m_plane[5], m_vtx + 1, m_vtx + 5, m_vtx + 6);	// 우 평면(right)
 
 	//IB 처음 한번만하면 될지 궁금 -> 된다
-	InitVB();
+	FillVB();
 	//InitIB();
 	return TRUE;
 }

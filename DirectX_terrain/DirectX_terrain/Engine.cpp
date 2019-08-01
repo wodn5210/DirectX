@@ -13,7 +13,8 @@ Engine::~Engine()
 	delete m_CamMap;
 	delete m_tri;
 	delete m_ball;
-
+	delete m_hole;
+	delete m_tree1;
 
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
@@ -37,11 +38,15 @@ HRESULT Engine::InitD3D(HWND hWnd)
 
 	D3DPRESENT_PARAMETERS d3dpp;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
+	d3dpp.BackBufferWidth = m_winSizeX;               // 버퍼 해상도 넓이 설정
+	d3dpp.BackBufferHeight = m_winSizeY;               // 버퍼 해상도 높이 설정 
+	d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8;   // 버퍼 포맷 설정 
+	d3dpp.BackBufferCount = 1;                 // 백버퍼 수 
 	d3dpp.Windowed = TRUE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+
 	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 
 	if (FAILED(g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
 		D3DCREATE_HARDWARE_VERTEXPROCESSING,
@@ -50,7 +55,7 @@ HRESULT Engine::InitD3D(HWND hWnd)
 		return E_FAIL;
 	}
 
-	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	// Z버퍼기능을 켠다.
 	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
@@ -62,10 +67,9 @@ HRESULT Engine::InitD3D(HWND hWnd)
 HRESULT Engine::InitCam()
 {
 	// 뷰 행렬을 설정
-	m_CamMain = new CamMain(g_pd3dDevice);
-	//D3DXVECTOR3 vEyePt(50.0f, 50.0f, 50.0f);
+	m_CamMain = new CamMain(g_pd3dDevice);	
 	D3DXVECTOR3 vEyePt(0.0f, 30.0f, -50.0f);
-	D3DXVECTOR3 vLookatPt(0.0f, 20.0f, 20.0f);
+	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	m_CamMain->SetView(&vEyePt, &vLookatPt, &vUpVec);	
 	m_CamMain->SetViewport(D3DVIEWPORT9{ 0, 0, m_winSizeX, m_winSizeY, 0, 1 });
@@ -90,10 +94,10 @@ HRESULT Engine::InitLight()
 	light.Diffuse.g = 1.0f;
 	light.Diffuse.b = 1.0f;
 	light.Diffuse.a = 1.0f;
-	//vecDir = D3DXVECTOR3(1, 1, 1);
-	vecDir = D3DXVECTOR3(cosf(GetTickCount() / 350.0f),
-		1.0f,
-		sinf(GetTickCount() / 350.0f));
+	vecDir = D3DXVECTOR3(1, 1, 1);
+	//vecDir = D3DXVECTOR3(cosf(GetTickCount() / 350.0f),
+	//	1.0f,
+	//	sinf(GetTickCount() / 350.0f));
 	D3DXVec3Normalize((D3DXVECTOR3*)& light.Direction, &vecDir);
 	light.Range = 1000.0f;
 	g_pd3dDevice->SetLight(0, &light);
@@ -108,42 +112,39 @@ HRESULT Engine::InitLight()
 HRESULT Engine::InitObj()
 {
 	vector<string> tex_file_dir;
-	tex_file_dir.push_back("src/tile2.tga");
+	tex_file_dir.push_back("src/golf/field.bmp");
 	tex_file_dir.push_back("src/lightmap.tga");
 	g_pTerrain = new Terrain;
-	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f), 
+	g_pTerrain->Create(g_pd3dDevice, &D3DXVECTOR3(1.0f, 0.1f, 1.0f),
 		0.1f, "src/map129.bmp", tex_file_dir);
 
+
 	g_pFrustum = new Frustum(g_pd3dDevice);
+	g_pFrustum->Init();
+
 	m_tri = new ObjTriangle(g_pd3dDevice);
+
 	m_ball = new ObjBall(g_pd3dDevice, g_pTerrain);
-	
-	m_ball->Create(D3DXVECTOR3(0, 10, 20), 0.01);
+	m_ball->Create(D3DXVECTOR3(44, 1, -50), 0.05f);
 	
 	m_skybox = new ObjSkyBox(g_pd3dDevice);
 	m_skybox->Create();
 
-	/*D3DXVECTOR3* cam = m_CamMain->GetEye();
-*/
+	m_hole = new ObjHole(g_pd3dDevice);
+	m_hole->Create(D3DXVECTOR3(40, -0.1, -50), 0.15f);
+
+	m_tree1 = new ObjTree1(g_pd3dDevice);
+	m_tree1->Create(D3DXVECTOR3(30, 2, -50), "src/golf/tree1.dds");
+
+	
 	return TRUE;
 }
 
-//카메라를 움직이기전에  
-VOID Engine::_BallCameraSetup()
-{
-	D3DXVECTOR3 eye = *(m_CamMain->GetEye());			//카메라의 위치
-	D3DXVECTOR3 view = *(m_CamMain->GetvView());		//카메라의 방향벡터
 
-	D3DXVECTOR3 ballPos = eye + view * 10;
-	m_ball->SetCenter(ballPos);
-	
-	
-}
 VOID Engine::SetCameraMoveZ(float dist) 
 {
 
 	m_CamMain->MoveLocalZ(dist);
-
 };
 VOID Engine::SetCameraMoveX(float dist) 
 {
@@ -172,22 +173,18 @@ VOID Engine::MouseMove(WORD x, WORD y)
 
 }
 
-VOID Engine::_SetBillBoard()
+D3DXMATRIXA16 Engine::_CalcBillBoard()
 {
 	D3DXMATRIXA16 matBillBoard;
 	D3DXMatrixIdentity(&matBillBoard);
 
-	matBillBoard._11 = m_CamMain->GetBillMatrix()->_11;
-	matBillBoard._13 = m_CamMain->GetBillMatrix()->_13;
-	matBillBoard._31 = m_CamMain->GetBillMatrix()->_31;
-	matBillBoard._33 = m_CamMain->GetBillMatrix()->_33;
-	/*
-	//위치 보정 필요함 - 나중에 빌보드 쓸때 수정하자
-	matBillBoard._41 = ;
-	matBillBoard._42 = ;
-	matBillBoard._43 = ;
-	*/
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matBillBoard);
+	matBillBoard._11 = m_CamMain->GetViewMatrix()->_11;
+	matBillBoard._13 = m_CamMain->GetViewMatrix()->_13;
+	matBillBoard._31 = m_CamMain->GetViewMatrix()->_31;
+	matBillBoard._33 = m_CamMain->GetViewMatrix()->_33;
+	D3DXMatrixInverse(&matBillBoard, NULL, &matBillBoard);
+	
+	return matBillBoard;
 }
 
 VOID Engine::RenderReady()
@@ -196,19 +193,10 @@ VOID Engine::RenderReady()
 	InitLight();
 
 	//볼 움직임 
-
 	m_ball->MovePhysical();
-	if (g_bBallCamera)
-	{
-		//m_ball->MovePhysical();
-		D3DXVECTOR3 newEye = *(m_ball->GetCenter()) + D3DXVECTOR3(0, 1, -2);
-		D3DXVECTOR3 newLookat = *(m_ball->GetCenter()) + D3DXVECTOR3(0, 0, 0);
-		m_CamMain->SetView(&newEye, &newLookat, &D3DXVECTOR3(0, 1, 0));
 
-	}
-	
+	ISBallInHole();
 
-	
 	//프러스텀 효과 가시화하기위한것.
 	//막히면 마지막으로 설정되었던 프러스텀효과를 보여준다
 	if (!g_bLockFrustum)
@@ -216,7 +204,6 @@ VOID Engine::RenderReady()
 		D3DXMATRIXA16	m;
 		D3DXMATRIXA16* pView = m_CamMain->GetViewMatrix();	// 카메라 클래스로부터 행렬정보를 얻는다.
 		D3DXMATRIXA16* pProj = m_CamMain->GetProjMatrix();
-
 		m = (*pView) * (*pProj);				// World좌표를 얻기위해서 View * Proj행렬을 계산한다.
 		g_pFrustum->Make(&m, m_CamMain->GetEye());	// View*Proj행렬로 Frustum을 만든다.
 	}
@@ -226,16 +213,18 @@ VOID Engine::Rendering()
 {
 	if (NULL == g_pd3dDevice)
 		return;
-
+	
 	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, g_bWireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
-	RenderReady();	
-	
 
-	
 
+	RenderReady();
 
 	//메인 렌더링
-	m_CamMain->ResetView();
+	if(g_bBallCamera)
+		m_CamMain->ResetBallView();
+	else
+		m_CamMain->ResetView();
+	
 
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
 		D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
@@ -244,8 +233,12 @@ VOID Engine::Rendering()
 	{
 		g_pTerrain->DrawMain(g_pFrustum);
 		m_ball->DrawMain();
-
+		m_hole->DrawMain();
 		m_skybox->DrawMain();
+
+
+		m_tree1->DrawMain(&_CalcBillBoard());
+
 		if (g_bSelectTriOn) {
 
 			m_tri->DrawMain();
@@ -270,6 +263,7 @@ VOID Engine::Rendering()
 	{
 		g_pTerrain->DrawMap();
 		m_ball->DrawMap();
+		m_hole->DrawMap();
 		if (g_bSelectTriOn) {
 			m_tri->DrawMap();
 
@@ -282,7 +276,11 @@ VOID Engine::Rendering()
 
 
 	//원래로 돌려놔야 Picking 제대로 작동
-	m_CamMain->ResetView();
+	if (g_bBallCamera)
+		m_CamMain->ResetBallView();
+	else
+		m_CamMain->ResetView();
+	
 
 
 	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
@@ -304,18 +302,42 @@ VOID Engine::MeshPickingStart(int x, int y)
 	//Object객체들의 Search시작하자
 	//0<buf_dist<dist pos계속 갱신하면됨 - 내부에서 진행할거임
 	g_pTerrain->MeshPicking(ray, dist, pos);
-
+	
 	//값 갱신 되었으면 어떤 위치 찾은거임
 	if (dist != FLT_MAX)
 	{
+		printf("click %.3f %.3f %.3f\n", pos[0].x, pos[0].y, pos[0].z);
 		//메시 찾은경우 빨강색으로 표시할 수 있게 만들자 - Pos 정점 3개를 삼각형으로 만들어버리자
 		m_tri->Create(pos);
 		
 		g_bSelectTriOn = TRUE;
 
+		
 
 		//선분도 그리기
 	}
-	printf("\n\n");
 
+}
+
+
+VOID Engine::SetBallCamRotateY(float degree)
+{
+	D3DXVECTOR3* ballPos = m_ball->GetCenter();
+	m_CamMain->SetBallViewRotateY(degree);
+}
+
+
+BOOL Engine::ISBallInHole()
+{
+	//원기둥 센터에서 대각선 길이 + 공 반지름
+	float in_size = m_hole->GetR() * sqrtf(2.0f) + m_ball->GetR();
+
+	float dist = D3DXVec3Length(&(*m_hole->GetCenter() - *m_ball->GetCenter()));
+
+	if (dist <= in_size)
+	{
+		printf("충돌 !");
+		return true;
+	}
+	return false;
 }

@@ -12,7 +12,9 @@
 #include "CamMiniMap.h"
 #include "ObjTriangle.h"
 #include "ObjBall.h"
+#include "ObjHole.h"
 #include "ObjSkyBox.h"
+#include "ObjTree1.h"
 #include "Frustum.h"
 #include "Terrain.h"
 #include "Ray.h"
@@ -48,7 +50,8 @@ private:
 	ObjTriangle* m_tri;
 	ObjBall* m_ball;
 	ObjSkyBox* m_skybox;
-
+	ObjHole* m_hole;
+	ObjTree1* m_tree1;
 
 	CamMain* m_CamMain;
 	CamMiniMap* m_CamMap;
@@ -65,8 +68,7 @@ private:
 private:
 
 
-	VOID _SetBillBoard();
-	VOID _BallCameraSetup();
+	D3DXMATRIXA16 _CalcBillBoard();
 
 public:
 	Engine();
@@ -83,7 +85,7 @@ public:
 	VOID Rendering();
 
 	VOID MeshPickingStart(int x, int y);
-	VOID DrawDirection();
+
 
 
 	VOID SetFrustum()
@@ -102,15 +104,26 @@ public:
 	VOID SetBallCamera()
 	{
 		g_bBallCamera = !g_bBallCamera;
+		if (g_bBallCamera)
+		{
+			D3DXVECTOR3* ballPos = m_ball->GetCenter();
+			m_CamMain->SetBallPosP(ballPos);
+			m_CamMain->SetBallView(&D3DXVECTOR3(0, 1, 0));
+
+		}
 	}
 	VOID SetCameraMoveZ(float dist);
 	VOID SetCameraMoveX(float dist);
 
 	VOID MouseMove(WORD x, WORD y);
-	
-	VOID SetBallAccAdd(D3DXVECTOR3 acc) { m_ball->SetBallAccAdd(acc); }
-	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_ball->SetBallSpdAdd(spd); }
-	
 
+	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_ball->SetBallSpdAdd(spd); }
+
+
+	//ball 기준으로 세팅된 카메라의 회전
+	VOID SetBallCamRotateY(float degree);
+	VOID SetBallJump(float energy) { m_ball->SetBallJump(energy, m_CamMain->GetvView()); };
+
+	BOOL ISBallInHole();
 };
 
