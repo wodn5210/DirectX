@@ -43,7 +43,7 @@ public:
 
 	//물리적 요소를 반영한 움직임 하자
 	//현재 위치의 지형vertex
-	void MovePhysical(D3DXVECTOR3 terrain[3] = 0);
+	int MovePhysical(D3DXVECTOR3 terrain[3] = 0);
 	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_vSpeed += spd; };
 	VOID SetBallJump(float energy, D3DXVECTOR3* pView);
 	

@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjGraphic.h"
 #include "define.h"
+#include "FIleReadObj.h"
 
 struct CUSTOMVERTEX
 {

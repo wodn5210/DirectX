@@ -15,6 +15,7 @@ Engine::~Engine()
 	delete m_ball;
 	delete m_hole;
 	delete m_tree1;
+	delete m_skybox;
 
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
@@ -55,7 +56,7 @@ HRESULT Engine::InitD3D(HWND hWnd)
 		return E_FAIL;
 	}
 
-	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	// Z버퍼기능을 켠다.
 	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
@@ -70,6 +71,8 @@ HRESULT Engine::InitCam()
 	m_CamMain = new CamMain(g_pd3dDevice);	
 	D3DXVECTOR3 vEyePt(0.0f, 30.0f, -50.0f);
 	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+	//D3DXVECTOR3 vEyePt(0.0f, 0.0f, -1.0f);
+	//D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 1.0f);
 	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
 	m_CamMain->SetView(&vEyePt, &vLookatPt, &vUpVec);	
 	m_CamMain->SetViewport(D3DVIEWPORT9{ 0, 0, m_winSizeX, m_winSizeY, 0, 1 });
@@ -136,7 +139,9 @@ HRESULT Engine::InitObj()
 	m_tree1 = new ObjTree1(g_pd3dDevice);
 	m_tree1->Create(D3DXVECTOR3(30, 2, -50), "src/golf/tree1.dds");
 
-	
+	m_bar = new ObjProgressbar(g_pd3dDevice);
+	m_bar->Create();
+
 	return TRUE;
 }
 
@@ -166,7 +171,7 @@ VOID Engine::MouseMove(WORD x, WORD y)
 	m_CamMain->ResetView();
 
 	// 마우스를 윈도우의 중앙으로 초기화
-	//SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
+	SetCursor( NULL );	// 마우스를 나타나지 않게 않다.
 	ClientToScreen(g_hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
 
@@ -193,7 +198,11 @@ VOID Engine::RenderReady()
 	InitLight();
 
 	//볼 움직임 
-	m_ball->MovePhysical();
+	g_BallState = m_ball->MovePhysical();
+	if (g_BallState != 0)
+	{
+		g_bBallJump = FALSE;
+	}
 
 	ISBallInHole();
 
@@ -215,6 +224,7 @@ VOID Engine::Rendering()
 		return;
 	
 	g_pd3dDevice->SetRenderState(D3DRS_FILLMODE, g_bWireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+	//g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 
 
 	RenderReady();
@@ -225,6 +235,10 @@ VOID Engine::Rendering()
 	else
 		m_CamMain->ResetView();
 	
+	D3DXMATRIXA16	m;
+	D3DXMATRIXA16* pView = m_CamMain->GetViewMatrix();	// 카메라 클래스로부터 행렬정보를 얻는다.
+	D3DXMATRIXA16* pProj = m_CamMain->GetProjMatrix();
+
 
 	g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
 		D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
@@ -235,12 +249,17 @@ VOID Engine::Rendering()
 		m_ball->DrawMain();
 		m_hole->DrawMain();
 		m_skybox->DrawMain();
-
-
 		m_tree1->DrawMain(&_CalcBillBoard());
 
-		if (g_bSelectTriOn) {
+		if (g_bBallEnergyView || g_bBallJump)
+		{
+			m = (*pView) * (*pProj);
+			m_bar->DrawMain(&m, g_BallEnergy);
+			
+		}
 
+		if (g_bSelectTriOn) 
+		{
 			m_tri->DrawMain();
 		}
 
@@ -261,6 +280,8 @@ VOID Engine::Rendering()
 
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
+		
+
 		g_pTerrain->DrawMap();
 		m_ball->DrawMap();
 		m_hole->DrawMap();
@@ -281,7 +302,9 @@ VOID Engine::Rendering()
 	else
 		m_CamMain->ResetView();
 	
+	
 
+	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 
 	g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
 }
@@ -325,7 +348,11 @@ VOID Engine::SetBallCamRotateY(float degree)
 	D3DXVECTOR3* ballPos = m_ball->GetCenter();
 	m_CamMain->SetBallViewRotateY(degree);
 }
-
+VOID Engine::SetBallCamRotateX(float degree)
+{
+	D3DXVECTOR3* ballPos = m_ball->GetCenter();
+	m_CamMain->SetBallViewRotateX(degree);
+}
 
 BOOL Engine::ISBallInHole()
 {
@@ -340,4 +367,14 @@ BOOL Engine::ISBallInHole()
 		return true;
 	}
 	return false;
+}
+
+VOID Engine::SetBallJump(float energy)
+{
+	if (g_bBallJump)
+		return;
+	g_bBallJump = true;
+	m_ball->SetBallJump(energy, m_CamMain->GetvView()); 
+	g_bBallEnergyView = false;
+
 }

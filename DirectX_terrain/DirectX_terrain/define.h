@@ -1,8 +1,14 @@
 #pragma once
 #define GRAVITY 0.0098f
 #define PI 3.141592f
+#define Epsilon 0.00005f
 #include <vector>
 #include <string>
+
+struct TRI_IDX
+{
+	WORD _0, _1, _2;
+};
 
 struct TERRAIN_VTX
 {
@@ -17,10 +23,6 @@ struct BALL_VTX
 	D3DXVECTOR3	p;
 	D3DXVECTOR3	n;
 	D3DXVECTOR2	t;
-};
-struct TRI_IDX
-{
-	WORD _0, _1, _2;
 };
 struct SKY_VTX
 {
@@ -39,12 +41,9 @@ struct BAR_VTX
 {
 	enum _FVF { FVF = (D3DFVF_XYZ) };
 	D3DXVECTOR3	p;
+
 };
 
-
-	BAR_VTX vtx = {
-		{}
-	};
 
 class MATH {
 public:

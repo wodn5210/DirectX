@@ -107,7 +107,7 @@ HRESULT ObjBall::_InitMtrl()
 }
 
 
-void ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
+int ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
 {
 	int m_x = m_pTerrain->GetX() / 2;
 	int m_z = m_pTerrain->GetZ() / 2;
@@ -119,7 +119,7 @@ void ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
 
 		this->Reset();
 		//MAP OUT 리턴값 줘서 카메라 셋팅도 다시할수있게
-		return;
+		return 2;
 	}
 	
 	D3DXVECTOR3 gravity = D3DXVECTOR3(0, -GRAVITY, 0);
@@ -143,6 +143,7 @@ void ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
 	{
 		m_center.y = height + m_r/1.5f;
 		
+		
 		//방향바꾸고
 		m_vSpeed += 2 * norm * n;
 		m_vSpeed -= 0.001f * m_vSpeed;
@@ -156,7 +157,7 @@ void ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
 			m_vSpeed = D3DXVECTOR3(0, 0, 0);
 			
 			//멈춘상태 리턴값주기
-			return;
+			return 1;
 		}
 
 		//법선벡터와 중력의 사이각을 알아내서 기울어진 면에서도 자연스럽게 떨어지게
@@ -178,6 +179,7 @@ void ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
 	SetCenter(after);
 
 	//정상종료상태 리턴값 주기
+	return 0;
 }
 
 
@@ -194,5 +196,5 @@ VOID ObjBall::SetBallJump(float energy, D3DXVECTOR3* pView)
 
 
 	//처음칠때 약간 위에서 치게함 - 원치않는 오차 방지
-	m_center.y += 1;
+	m_center.y += m_r;
 }

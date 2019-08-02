@@ -2,6 +2,7 @@
 #include <d3d9.h>
 #include <time.h>
 #include "Engine.h"
+#include "FIleReadObj.h"
 
 #define HEIGHT 800
 #define WIDTH 800
@@ -46,11 +47,19 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (g_bBallCamera)
 				engine.SetBallCamRotateY(-0.1f);
 			break;
-
 		case VK_RIGHT:
 			if (g_bBallCamera)
 				engine.SetBallCamRotateY(0.1f);
 			break;
+		case VK_UP:
+			if (g_bBallCamera)
+				engine.SetBallCamRotateX(-0.1f);
+			break;
+		case VK_DOWN:
+			if (g_bBallCamera)
+				engine.SetBallCamRotateX(0.1f);
+			break;
+
 		case 'A':
 			if(g_bBallCamera)
 				engine.SetBallSpdAdd(D3DXVECTOR3(-0.05f, 0, 0));
@@ -77,9 +86,14 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				engine.SetCameraMoveZ(-0.5f);
 			break;
 		case VK_SPACE:
-			if(sT == 0 && eT == 0)
+			if(sT == 0)
 				sT = clock();
-			
+			else
+			{
+				eT = clock();
+				energy = (float)(eT - sT) / (CLOCKS_PER_SEC * 5);
+				engine.SetEnergyView(energy);
+			}
 			break;
 		}
 		break;
@@ -89,8 +103,10 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_SPACE:
 			eT = clock();
 			energy = (float)(eT - sT) / (CLOCKS_PER_SEC*5);
-			printf("energy = %f\n", energy);
+			//printf("energy = %f\n", energy);
 			sT = eT = 0;
+			if (energy >= 0.7)
+				energy = 0.7;
 			engine.SetBallJump(energy);
 
 			break;
@@ -120,8 +136,8 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
-
-
+	
+	
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 					  GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 					  "D3D Tutorial", NULL };
@@ -138,6 +154,8 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	START_CONSOLE();  //// 디버그 콘솔 시작
+	if (!FIleReadObj::ReadObj("src/golf/obj/low_poly_tree.obj"))
+		printf("성공");
 	
 	if (SUCCEEDED(engine.InitD3D(hWnd)) &&
 		SUCCEEDED(engine.InitCam()) &&

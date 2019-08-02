@@ -25,8 +25,7 @@ public:
 		m_bigScale._22 = m_scale._22 * m_big;
 		m_bigScale._33 = m_scale._33 * m_big;
 	}
-	void DrawMain();
-	void DrawMap();
+	
 
 
 	void SetTranslation(D3DXMATRIXA16& translation)

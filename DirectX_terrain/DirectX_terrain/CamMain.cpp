@@ -4,14 +4,14 @@ CamMain::CamMain(LPDIRECT3DDEVICE9 device)
 {
 	m_device = device;
 	m_ballEye = D3DXVECTOR3(3, 1, 0);
-	
+	m_ballLookat = D3DXVECTOR3(0, 0, 0);
 }
 
 VOID CamMain::SetView(D3DXVECTOR3* pvEye, D3DXVECTOR3* pvLookat, D3DXVECTOR3* pvUp)
 {
 	Cam::SetView(pvEye, pvLookat, pvUp);
 
-	D3DXMatrixPerspectiveFovLH(&m_matProj, D3DX_PI / 4, 1.0f, 1.0f, 1000.0f);
+	D3DXMatrixPerspectiveFovLH(&m_matProj, D3DX_PI / 4, 1.0f, 1.0f, 500.0f);
 	m_device->SetTransform(D3DTS_PROJECTION, &m_matProj);
 
 	D3DXVec3Normalize(&m_vView, &(m_vLookat - m_vEye));
@@ -108,7 +108,7 @@ m_vEye = ball위치 + m_ballEye
 VOID CamMain::SetBallView(D3DXVECTOR3* pvUp)
 {
 
-	SetView(&(*m_pBallPos + m_ballEye), m_pBallPos, pvUp);
+	SetView(&(*m_pBallPos + m_ballEye), &(*m_pBallPos + m_ballLookat), pvUp);
 }
 
 // 카메라 좌표계의 Y축으로 angle만큼 회전한다.
@@ -117,8 +117,23 @@ VOID CamMain::SetBallViewRotateY(float angle)
 	D3DXMATRIXA16 matRot;
 	D3DXMatrixRotationAxis(&matRot, &m_vUp, angle);
 
-	D3DXVECTOR3 vNewDst;
 	D3DXVec3TransformCoord(&m_ballEye, &m_ballEye, &matRot);	//y축 기준으로 ballEye 회전시킴
 
-	SetView(&(*m_pBallPos + m_ballEye), m_pBallPos, &D3DXVECTOR3(0, 1, 0));
+	SetView(&(*m_pBallPos + m_ballEye), &(*m_pBallPos + m_ballLookat), &D3DXVECTOR3(0, 1, 0));
+}
+#include <stdio.h>
+// 카메라 좌표계의 X축으로 angle만큼 회전한다. - 
+VOID CamMain::SetBallViewRotateX(float angle)
+{
+	D3DXMATRIXA16 matRot;
+	D3DXMatrixRotationAxis(&matRot, &m_vCross, angle);
+
+	//ballLookat과 ballcam을 로컬행렬로 변환시킨후 ballcam기준으로 lookat회전
+	//다시 원상복귀 시킨후 렌더링
+	printf("before = %.3f %.3f %.3f\n", m_ballLookat.x, m_ballLookat.y, m_ballLookat.z);
+	m_ballLookat -= m_ballEye;
+	D3DXVec3TransformCoord(&m_ballLookat, &m_ballLookat, &matRot);	//x축 기준으로 ballEye 회전시킴
+	m_ballLookat += m_ballEye;
+	printf("after = %.3f %.3f %.3f\n", m_ballLookat.x, m_ballLookat.y, m_ballLookat.z);
+	SetView(&(*m_pBallPos + m_ballEye), &(*m_pBallPos + m_ballLookat), &D3DXVECTOR3(0, 1, 0));
 }

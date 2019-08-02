@@ -15,6 +15,7 @@
 #include "ObjHole.h"
 #include "ObjSkyBox.h"
 #include "ObjTree1.h"
+#include "ObjProgressbar.h"
 #include "Frustum.h"
 #include "Terrain.h"
 #include "Ray.h"
@@ -44,7 +45,7 @@ private:
 
 	WORD					m_winSizeX;
 	WORD					m_winSizeY;
-		
+
 
 	//클릭한 삼각형 출력용
 	ObjTriangle* m_tri;
@@ -52,6 +53,7 @@ private:
 	ObjSkyBox* m_skybox;
 	ObjHole* m_hole;
 	ObjTree1* m_tree1;
+	ObjProgressbar* m_bar;
 
 	CamMain* m_CamMain;
 	CamMiniMap* m_CamMap;
@@ -64,6 +66,10 @@ private:
 	BOOL					g_bWireframe = FALSE;	// 와이어프레임으로 그릴것인가?
 	BOOL					g_bSelectTriOn = FALSE;	// 선택한 삼각형 빨강색으로 그리기
 	BOOL					g_bBallCamera = FALSE;
+	BOOL					g_bBallJump = FALSE;
+	BOOL					g_bBallEnergyView = FALSE;
+	float					g_BallEnergy = 0;
+	int						g_BallState = 1;
 
 private:
 
@@ -80,7 +86,7 @@ public:
 	HRESULT InitLight();
 	HRESULT InitObj();
 
-	
+
 	VOID RenderReady();
 	VOID Rendering();
 
@@ -93,7 +99,7 @@ public:
 		g_bLockFrustum = !g_bLockFrustum;
 		g_bHideFrustum = !g_bLockFrustum;
 	}
-	VOID SetWire() 
+	VOID SetWire()
 	{
 		g_bWireframe = !g_bWireframe;
 	}
@@ -122,8 +128,18 @@ public:
 
 	//ball 기준으로 세팅된 카메라의 회전
 	VOID SetBallCamRotateY(float degree);
-	VOID SetBallJump(float energy) { m_ball->SetBallJump(energy, m_CamMain->GetvView()); };
+	VOID SetBallCamRotateX(float degree);
+	VOID SetBallJump(float energy);
+	VOID SetEnergyView(float energy)
+	{
+		if (energy >= 0.7 || g_bBallJump)
+			return;
+		g_bBallEnergyView = TRUE;
+		g_BallEnergy = energy;
+	}
+	;
 
 	BOOL ISBallInHole();
+
 };
 
