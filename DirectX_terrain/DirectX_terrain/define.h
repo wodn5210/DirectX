@@ -30,11 +30,17 @@ struct SKY_VTX
 	D3DXVECTOR3	p;
 	D3DXVECTOR2	t;
 };
-struct TREE_VTX
+struct TREE1_VTX
 {
 	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_TEX1) };
 	D3DXVECTOR3	p;
 	D3DXVECTOR2	t;
+};
+struct TREE2_VTX
+{
+	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_NORMAL) };
+	D3DXVECTOR3	p;
+	D3DXVECTOR3	n;
 };
 
 struct BAR_VTX

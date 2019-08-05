@@ -160,6 +160,7 @@
     <ClCompile Include="ObjProgressbar.cpp" />
     <ClCompile Include="ObjSkyBox.cpp" />
     <ClCompile Include="ObjTree1.cpp" />
+    <ClCompile Include="ObjTree2.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="ObjProgressbar.h" />
     <ClInclude Include="ObjSkyBox.h" />
     <ClInclude Include="ObjTree1.h" />
+    <ClInclude Include="ObjTree2.h" />
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Terrain.h" />

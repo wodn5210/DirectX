@@ -4,6 +4,8 @@
 #include "Engine.h"
 #include "FIleReadObj.h"
 
+using namespace std;
+
 #define HEIGHT 800
 #define WIDTH 800
 #pragma warning(disable:4996)
@@ -154,8 +156,11 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	START_CONSOLE();  //// 디버그 콘솔 시작
-	if (!FIleReadObj::ReadObj("src/golf/obj/low_poly_tree.obj"))
-		printf("성공");
+	//vector<TREE2_VTX> vt;
+	//vector<TRI_IDX> idx_leaves;
+	//vector<TRI_IDX> idx_trunk;
+	//if (FIleReadObj::ReadObj("src/golf/obj/low_poly_tree.obj", vt, &idx_leaves, &idx_trunk))
+	//	printf("성공");
 	
 	if (SUCCEEDED(engine.InitD3D(hWnd)) &&
 		SUCCEEDED(engine.InitCam()) &&

@@ -16,6 +16,7 @@ Engine::~Engine()
 	delete m_hole;
 	delete m_tree1;
 	delete m_skybox;
+	delete m_tree2;
 
 	if (g_pd3dDevice != NULL)
 		g_pd3dDevice->Release();
@@ -57,6 +58,7 @@ HRESULT Engine::InitD3D(HWND hWnd)
 	}
 
 	g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	//g_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	// Z버퍼기능을 켠다.
 	g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
@@ -93,11 +95,11 @@ HRESULT Engine::InitLight()
 	D3DLIGHT9 light;
 	ZeroMemory(&light, sizeof(D3DLIGHT9));
 	light.Type = D3DLIGHT_DIRECTIONAL;
-	light.Diffuse.r = 1.0f;
-	light.Diffuse.g = 1.0f;
-	light.Diffuse.b = 1.0f;
-	light.Diffuse.a = 1.0f;
-	vecDir = D3DXVECTOR3(1, 1, 1);
+	light.Diffuse.r = 0.9f;
+	light.Diffuse.g = 0.9f;
+	light.Diffuse.b = 0.9f;
+	light.Diffuse.a = 0.9f;
+	vecDir = D3DXVECTOR3(1, -1, 1);
 	//vecDir = D3DXVECTOR3(cosf(GetTickCount() / 350.0f),
 	//	1.0f,
 	//	sinf(GetTickCount() / 350.0f));
@@ -138,6 +140,9 @@ HRESULT Engine::InitObj()
 
 	m_tree1 = new ObjTree1(g_pd3dDevice);
 	m_tree1->Create(D3DXVECTOR3(30, 2, -50), "src/golf/tree1.dds");
+
+	m_tree2 = new ObjTree2(g_pd3dDevice);
+	m_tree2->Create(D3DXVECTOR3(35, 0, -50), "src/golf/obj/low_poly_tree.obj");
 
 	m_bar = new ObjProgressbar(g_pd3dDevice);
 	m_bar->Create();
@@ -246,9 +251,11 @@ VOID Engine::Rendering()
 	if (SUCCEEDED(g_pd3dDevice->BeginScene()))
 	{
 		g_pTerrain->DrawMain(g_pFrustum);
+		m_tree2->DrawMain();
 		m_ball->DrawMain();
 		m_hole->DrawMain();
 		m_skybox->DrawMain();
+	
 		m_tree1->DrawMain(&_CalcBillBoard());
 
 		if (g_bBallEnergyView || g_bBallJump)

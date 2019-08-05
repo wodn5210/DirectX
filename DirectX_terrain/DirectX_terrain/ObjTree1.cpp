@@ -29,8 +29,8 @@ void ObjTree1::DrawMain(D3DXMATRIXA16* matbill)
 	m_device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
 	m_device->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
-	m_device->SetStreamSource(0, m_pVB, 0, sizeof(TREE_VTX));
-	m_device->SetFVF(TREE_VTX::FVF);
+	m_device->SetStreamSource(0, m_pVB, 0, sizeof(TREE1_VTX));
+	m_device->SetFVF(TREE1_VTX::FVF);
 	m_device->SetIndices(m_pIB);
 	_InitMtrl();
 
@@ -73,7 +73,30 @@ HRESULT ObjTree1::Create(D3DXVECTOR3 center, string txt)
 
 HRESULT ObjTree1::_InitVB()
 {
-	TREE_VTX vts[] =
+	//TREE1_VTX vts[] =
+	//{
+	//	{D3DXVECTOR3(-1, 1, 0), D3DXVECTOR2(0, 0)},
+	//	{D3DXVECTOR3(1, 1, 0), D3DXVECTOR2(1, 0)},
+	//	{D3DXVECTOR3(-1, -1, 0), D3DXVECTOR2(0, 1)},
+	//	{D3DXVECTOR3(1, -1, 0), D3DXVECTOR2(1, 1)},
+	//};
+
+	///// 정점버퍼 생성
+	//if (FAILED(m_device->CreateVertexBuffer(4 * sizeof(TREE1_VTX),
+	//	0, SKY_VTX::FVF, D3DPOOL_DEFAULT, &m_pVB, NULL)))
+	//{
+	//	return E_FAIL;
+	//}
+
+	///// 정점버퍼를 값으로 채운다. 
+	//VOID* pVertices;
+	//if (FAILED(m_pVB->Lock(0, sizeof(vts), (void**)& pVertices, 0)))
+	//	return E_FAIL;
+	//memcpy(pVertices, vts, sizeof(vts));
+	//m_pVB->Unlock();
+
+
+	vector<TREE1_VTX> vts =
 	{
 		{D3DXVECTOR3(-1, 1, 0), D3DXVECTOR2(0, 0)},
 		{D3DXVECTOR3(1, 1, 0), D3DXVECTOR2(1, 0)},
@@ -82,7 +105,7 @@ HRESULT ObjTree1::_InitVB()
 	};
 
 	/// 정점버퍼 생성
-	if (FAILED(m_device->CreateVertexBuffer(4 * sizeof(TREE_VTX),
+	if (FAILED(m_device->CreateVertexBuffer(vts.size() * sizeof(TREE1_VTX),
 		0, SKY_VTX::FVF, D3DPOOL_DEFAULT, &m_pVB, NULL)))
 	{
 		return E_FAIL;
@@ -90,9 +113,9 @@ HRESULT ObjTree1::_InitVB()
 
 	/// 정점버퍼를 값으로 채운다. 
 	VOID* pVertices;
-	if (FAILED(m_pVB->Lock(0, sizeof(vts), (void**)& pVertices, 0)))
+	if (FAILED(m_pVB->Lock(0, vts.size() * sizeof(TREE1_VTX), (void**)& pVertices, 0)))
 		return E_FAIL;
-	memcpy(pVertices, vts, sizeof(vts));
+	memcpy(pVertices, &vts[0], vts.size() * sizeof(TREE1_VTX));
 	m_pVB->Unlock();
 
 	return S_OK;

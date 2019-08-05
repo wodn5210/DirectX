@@ -15,6 +15,7 @@
 #include "ObjHole.h"
 #include "ObjSkyBox.h"
 #include "ObjTree1.h"
+#include "ObjTree2.h"
 #include "ObjProgressbar.h"
 #include "Frustum.h"
 #include "Terrain.h"
@@ -53,7 +54,9 @@ private:
 	ObjSkyBox* m_skybox;
 	ObjHole* m_hole;
 	ObjTree1* m_tree1;
+	ObjTree2* m_tree2;
 	ObjProgressbar* m_bar;
+	
 
 	CamMain* m_CamMain;
 	CamMiniMap* m_CamMap;
