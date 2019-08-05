@@ -3,18 +3,10 @@
 #include "define.h"
 #include "FIleReadObj.h"
 
-struct CUSTOMVERTEX
-{
-	D3DXVECTOR3 pos;
-	D3DXVECTOR3 normal;
-};
-struct MYINDEX
-{
-	WORD _0, _1, _2;
-};
 
 class ObjTriangle : public ObjGraphic
 {
+	
 private:
 	LPDIRECT3DDEVICE9 m_device;
 

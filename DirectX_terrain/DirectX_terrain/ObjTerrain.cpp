@@ -1,22 +1,22 @@
-#include "Terrain.h"
+#include "ObjTerrain.h"
 #include "Dib.h"
 
-Terrain::Terrain() {
-	center[0] = center[1] = center[2] = 0;
-	m_scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+ObjTerrain::ObjTerrain() {
+
+	m_mapscale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 }
-Terrain::~Terrain() {
+ObjTerrain::~ObjTerrain() {
 	for (unsigned int i = 0; i < m_vTex.size(); i++)
 		m_vTex[i]->Release();
 	delete m_pQuadTree;
 	delete m_pHeightMap;
 }
 
-HRESULT Terrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLODRatio,
+HRESULT ObjTerrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLODRatio,
 	string heightmap_dir, vector<string> vTexture_dir)
 {
-	m_pd3dDevice = device;
-	m_scale = *scale;
+	m_device = device;
+	m_mapscale = *scale;
 
 	m_fLODRatio = fLODRatio;
 
@@ -42,7 +42,7 @@ HRESULT Terrain::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLOD
 	return S_OK;
 }
 
-HRESULT Terrain::_CreateHeightMap(string fileName)
+HRESULT ObjTerrain::_CreateHeightMap(string fileName)
 {
 	int		n;
 	LPBYTE	pDIB = DibLoadHandle((LPSTR)fileName.c_str());
@@ -66,10 +66,10 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 	{
 		for (int x = 0; x < m_x; x++)
 		{
-			v.p.x = (float)((x - m_x / 2) * m_scale.x);
-			v.p.z = -(float)((z - m_z / 2) * m_scale.z);
+			v.p.x = (float)((x - m_x / 2) * m_mapscale.x);
+			v.p.z = -(float)((z - m_z / 2) * m_mapscale.z);
 
-			v.p.y = (float)(*(DIB_DATAXY_INV(pDIB, x, z))) * m_scale.y;
+			v.p.y = (float)(*(DIB_DATAXY_INV(pDIB, x, z))) * m_mapscale.y;
 			//m_y 최대높이
 			if (m_y < v.p.y)
 				m_y = v.p.y;
@@ -84,22 +84,22 @@ HRESULT Terrain::_CreateHeightMap(string fileName)
 
 	return S_OK;
 }
-HRESULT Terrain::_CreateTexture(vector<string> vFileName)
+HRESULT ObjTerrain::_CreateTexture(vector<string> vFileName)
 {
 	//****이거 안될수도 있음 디버깅 1순위로 보자. 
 	for (unsigned int i = 0; i < vFileName.size(); i++) {
 		LPDIRECT3DTEXTURE9 buf;
-		D3DXCreateTextureFromFile(m_pd3dDevice, (LPCSTR)(vFileName[i].c_str()), &buf);
+		D3DXCreateTextureFromFile(m_device, (LPCSTR)(vFileName[i].c_str()), &buf);
 		m_vTex.push_back(buf);
 	}
 
 	return S_OK;
 }
-HRESULT Terrain::_CreateVIB()
+HRESULT ObjTerrain::_CreateVIB()
 {
 	VOID* pVertices;
 	// VB생성
-	if (FAILED(m_pd3dDevice->CreateVertexBuffer(m_x * m_z * sizeof(TERRAIN_VTX),
+	if (FAILED(m_device->CreateVertexBuffer(m_x * m_z * sizeof(TERRAIN_VTX),
 		0, TERRAIN_VTX::FVF, D3DPOOL_DEFAULT, &m_pVB, NULL)))
 	{
 		return E_FAIL;
@@ -112,7 +112,7 @@ HRESULT Terrain::_CreateVIB()
 	m_pVB->Unlock();
 
 	// IB생성
-	if (FAILED(m_pd3dDevice->CreateIndexBuffer((m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX),
+	if (FAILED(m_device->CreateIndexBuffer((m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX),
 		0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &m_pIB, NULL)))
 	{
 		return E_FAIL;
@@ -121,52 +121,55 @@ HRESULT Terrain::_CreateVIB()
 
 	return S_OK;
 }
-HRESULT Terrain::_CreateQuadTree()
+HRESULT ObjTerrain::_CreateQuadTree()
 {
 	m_pQuadTree->Create(m_pHeightMap);
 	return S_OK;
 }
-HRESULT Terrain::_Render()
+HRESULT ObjTerrain::_Render()
 {
-	//m_pd3dDevice->SetTexture(0, m_vTex[0]);								// 0번 텍스쳐 스테이지에 텍스쳐 고정(색깔맵)
-	//m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
-	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);		// 0번 텍스처 : 0번 텍스처 인덱스 사용
+	D3DXMatrixIdentity(&m_matWorld);
+	m_device->SetTransform(D3DTS_WORLD, &m_matWorld);
 
-	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	//m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	//m_device->SetTexture(0, m_vTex[0]);								// 0번 텍스쳐 스테이지에 텍스쳐 고정(색깔맵)
+	//m_device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
+	//m_device->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);		// 0번 텍스처 : 0번 텍스처 인덱스 사용
 
-	m_pd3dDevice->SetTexture(0, m_vTex[0]);								// 0번 텍스쳐 스테이지에 텍스쳐 고정(색깔맵)
-	m_pd3dDevice->SetTexture(1, m_vTex[1]);								// 1번 텍스쳐 스테이지에 텍스쳐 고정(음영맵)
-	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
-	m_pd3dDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);		// 0번 텍스처 : 0번 텍스처 인덱스 사용
-	m_pd3dDevice->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 0);		// 1번 텍스처 : 0번 텍스처 인덱스 사용
+	//m_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	//m_device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	//m_device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);		// MODULATE로 섞는다.
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);		// 텍스처
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);		// 정점색
-	m_pd3dDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE2X);	// MODULATE2로 섞는다.
-	m_pd3dDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_TEXTURE);		// 텍스처
-	m_pd3dDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_CURRENT);		// 현재색
+	m_device->SetTexture(0, m_vTex[0]);								// 0번 텍스쳐 스테이지에 텍스쳐 고정(색깔맵)
+	m_device->SetTexture(1, m_vTex[1]);								// 1번 텍스쳐 스테이지에 텍스쳐 고정(음영맵)
+	m_device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
+	m_device->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);	// 0번 텍스처 스테이지의 확대 필터
+	m_device->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);		// 0번 텍스처 : 0번 텍스처 인덱스 사용
+	m_device->SetTextureStageState(1, D3DTSS_TEXCOORDINDEX, 0);		// 1번 텍스처 : 0번 텍스처 인덱스 사용
+
+	m_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);		// MODULATE로 섞는다.
+	m_device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);		// 텍스처
+	m_device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);		// 정점색
+	m_device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE2X);	// MODULATE2로 섞는다.
+	m_device->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_TEXTURE);		// 텍스처
+	m_device->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_CURRENT);		// 현재색
 
 
-	m_pd3dDevice->SetStreamSource(0, m_pVB, 0, sizeof(TERRAIN_VTX));
-	m_pd3dDevice->SetFVF(TERRAIN_VTX::FVF);
-	m_pd3dDevice->SetIndices(m_pIB);
-	m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_x * m_z, 0, m_nTriangles);
+	m_device->SetStreamSource(0, m_pVB, 0, sizeof(TERRAIN_VTX));
+	m_device->SetFVF(TERRAIN_VTX::FVF);
+	m_device->SetIndices(m_pIB);
+	m_device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_x * m_z, 0, m_nTriangles);
 
-	m_pd3dDevice->SetTexture(0, NULL);
-	m_pd3dDevice->SetTexture(1, NULL);
+	m_device->SetTexture(0, NULL);
+	m_device->SetTexture(1, NULL);
 	return S_OK;
 }
-HRESULT	Terrain::DrawMain(Frustum* pFrustum)
+HRESULT	ObjTerrain::DrawMain(ObjFrustum* pObjFrustum)
 {
 	VOID* pIndices;
 	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pIndices, 0)))
 		return E_FAIL;
 	//쿼드 트리에서 인덱스 채우기
-	m_nTriangles = m_pQuadTree->GenerateIndex(pIndices, m_pHeightMap, pFrustum, m_fLODRatio);
+	m_nTriangles = m_pQuadTree->GenerateIndex(pIndices, m_pHeightMap, pObjFrustum, m_fLODRatio);
 
 	m_pIB->Unlock();
 	_SetMaterial();
@@ -175,7 +178,7 @@ HRESULT	Terrain::DrawMain(Frustum* pFrustum)
 	return S_OK;
 }
 
-HRESULT Terrain::DrawMap()
+HRESULT ObjTerrain::DrawMap()
 {
 	VOID* pIndices;
 	if (FAILED(m_pIB->Lock(0, (m_x - 1) * (m_z - 1) * 2 * sizeof(TRI_IDX), (void**)& pIndices, 0)))
@@ -189,7 +192,7 @@ HRESULT Terrain::DrawMap()
 	return S_OK;
 }
 
-HRESULT	Terrain::_SetMaterial()
+HRESULT	ObjTerrain::_SetMaterial()
 {
 	D3DMATERIAL9 mtrl;
 	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
@@ -197,11 +200,11 @@ HRESULT	Terrain::_SetMaterial()
 	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
 	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
 	mtrl.Diffuse.a = mtrl.Ambient.a = 0.0f;
-	m_pd3dDevice->SetMaterial(&mtrl);
+	m_device->SetMaterial(&mtrl);
 	return S_OK;
 }
 
-VOID Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
+VOID ObjTerrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 {
 	//Terrian은 QuadTree있어서 이걸 이용하면 효과적일듯
 	//여기서 Object가 Transform있다면 ray의 pos와 dir을 역변환 해주자 -> 로컬 좌표계
@@ -215,7 +218,7 @@ VOID Terrain::MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3])
 }
 
 
-float Terrain::GetHeight(D3DXVECTOR3* center, D3DXVECTOR3 pos[3])
+float ObjTerrain::GetHeight(D3DXVECTOR3* center, D3DXVECTOR3 pos[3])
 {
 	float x = center->x + m_x / 2;
 	float z = (center->z * -1) + m_z / 2;

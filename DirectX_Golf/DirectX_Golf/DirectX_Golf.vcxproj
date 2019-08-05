@@ -18,11 +18,34 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CamMain.cpp" />
+    <ClCompile Include="CamMiniMap.cpp" />
+    <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ObjButton.cpp" />
+    <ClCompile Include="SceneEnd.cpp" />
+    <ClCompile Include="SceneGame.cpp" />
+    <ClCompile Include="SceneStart.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Cam.h" />
+    <ClInclude Include="CamMain.h" />
+    <ClInclude Include="CamMiniMap.h" />
+    <ClInclude Include="define.h" />
+    <ClInclude Include="Engine.h" />
+    <ClInclude Include="ObjButton.h" />
+    <ClInclude Include="ObjGraphic.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneEnd.h" />
+    <ClInclude Include="SceneGame.h" />
+    <ClInclude Include="SceneStart.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{75933602-3473-46A8-9ACC-8F45888FBA4A}</ProjectGuid>
+    <ProjectGuid>{501D281E-ABC2-4E56-AFDD-5AB73438C19B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DirectXterrain</RootNamespace>
+    <RootNamespace>DirectXGolf</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -30,14 +53,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -80,8 +103,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -128,7 +149,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx10d.lib;d3dx9d.lib;dxerr.lib;dxguid.lib;winmm.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,46 +168,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="CamMain.cpp" />
-    <ClCompile Include="CamMiniMap.cpp" />
-    <ClCompile Include="Dib.cpp" />
-    <ClCompile Include="Engine.cpp" />
-    <ClCompile Include="ObjFrustum.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="ObjBall.cpp" />
-    <ClCompile Include="ObjHole.cpp" />
-    <ClCompile Include="ObjProgressbar.cpp" />
-    <ClCompile Include="ObjSkyBox.cpp" />
-    <ClCompile Include="ObjTree1.cpp" />
-    <ClCompile Include="ObjTree2.cpp" />
-    <ClCompile Include="QuadTree.cpp" />
-    <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="ObjTerrain.cpp" />
-    <ClCompile Include="ObjTriangle.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Cam.h" />
-    <ClInclude Include="CamMain.h" />
-    <ClInclude Include="CamMiniMap.h" />
-    <ClInclude Include="define.h" />
-    <ClInclude Include="Dib.h" />
-    <ClInclude Include="Engine.h" />
-    <ClInclude Include="FIleReadObj.h" />
-    <ClInclude Include="ObjFrustum.h" />
-    <ClInclude Include="ObjBall.h" />
-    <ClInclude Include="ObjGraphic.h" />
-    <ClInclude Include="ObjHole.h" />
-    <ClInclude Include="ObjProgressbar.h" />
-    <ClInclude Include="ObjSkyBox.h" />
-    <ClInclude Include="ObjTree1.h" />
-    <ClInclude Include="ObjTree2.h" />
-    <ClInclude Include="QuadTree.h" />
-    <ClInclude Include="Ray.h" />
-    <ClInclude Include="ObjTerrain.h" />
-    <ClInclude Include="ObjTriangle.h" />
-    <ClInclude Include="Scene.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

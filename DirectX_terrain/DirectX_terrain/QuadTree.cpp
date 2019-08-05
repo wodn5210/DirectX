@@ -107,7 +107,7 @@ BOOL QuadTree::_SubDivide()
 }
 
 int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex, 
-	TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio)
+	TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum, float fLODRatio)
 {
 	m_VisibleIdx.clear();
 	// 컬링된 노드라면 그냥 리턴 - 화면 밖이라 그릴 필요가 없다
@@ -118,7 +118,7 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 
 
 	//출력이 불가능하다는것은 거리가 가까워서 더 미세한 레벨의 Mesh로 렌더링 해야한다는것
-	if (_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio))
+	if (_IsVisible(pHeightMap, pObjFrustum->GetPos(), fLODRatio))
 	{
 		
 		unsigned short* p = ((unsigned short*)pIndex) + nTris * 3;
@@ -141,13 +141,13 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 
 		BOOL	b[4];
 		// 상단 이웃노드(neightbor node)가 출력가능한가?
-		if (m_pNeighbor[EDGE_UP]) b[EDGE_UP] = m_pNeighbor[EDGE_UP]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		if (m_pNeighbor[EDGE_UP]) b[EDGE_UP] = m_pNeighbor[EDGE_UP]->_IsVisible(pHeightMap, pObjFrustum->GetPos(), fLODRatio);
 		// 하단 이웃노드(neightbor node)가 출력가능한가?
-		if (m_pNeighbor[EDGE_DN]) b[EDGE_DN] = m_pNeighbor[EDGE_DN]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		if (m_pNeighbor[EDGE_DN]) b[EDGE_DN] = m_pNeighbor[EDGE_DN]->_IsVisible(pHeightMap, pObjFrustum->GetPos(), fLODRatio);
 		// 좌측 이웃노드(neightbor node)가 출력가능한가?
-		if (m_pNeighbor[EDGE_LT]) b[EDGE_LT] = m_pNeighbor[EDGE_LT]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		if (m_pNeighbor[EDGE_LT]) b[EDGE_LT] = m_pNeighbor[EDGE_LT]->_IsVisible(pHeightMap, pObjFrustum->GetPos(), fLODRatio);
 		// 우측 이웃노드(neightbor node)가 출력가능한가?
-		if (m_pNeighbor[EDGE_RT]) b[EDGE_RT] = m_pNeighbor[EDGE_RT]->_IsVisible(pHeightMap, pFrustum->GetPos(), fLODRatio);
+		if (m_pNeighbor[EDGE_RT]) b[EDGE_RT] = m_pNeighbor[EDGE_RT]->_IsVisible(pHeightMap, pObjFrustum->GetPos(), fLODRatio);
 
 		// 이웃노드들이 모두다 출력가능하다면 현재노드와 이웃노드들이 같은 LOD이므로 
 		// 부분분할이 필요없다.
@@ -232,10 +232,10 @@ int	QuadTree::_GenTriIndex(int nTris, VOID* pIndex,
 	}
 
 	//출력 불가능한경우 한단계 더 미세한 Child를 이용해서 렌더링한다. (128 -> 64 -> 32 -> 16 -> 8 -> 4 -> 2 -> 1)
-	if (m_pChild[CORNER_TL]) nTris = m_pChild[CORNER_TL]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
-	if (m_pChild[CORNER_TR]) nTris = m_pChild[CORNER_TR]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
-	if (m_pChild[CORNER_BL]) nTris = m_pChild[CORNER_BL]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
-	if (m_pChild[CORNER_BR]) nTris = m_pChild[CORNER_BR]->_GenTriIndex(nTris, pIndex, pHeightMap, pFrustum, fLODRatio);
+	if (m_pChild[CORNER_TL]) nTris = m_pChild[CORNER_TL]->_GenTriIndex(nTris, pIndex, pHeightMap, pObjFrustum, fLODRatio);
+	if (m_pChild[CORNER_TR]) nTris = m_pChild[CORNER_TR]->_GenTriIndex(nTris, pIndex, pHeightMap, pObjFrustum, fLODRatio);
+	if (m_pChild[CORNER_BL]) nTris = m_pChild[CORNER_BL]->_GenTriIndex(nTris, pIndex, pHeightMap, pObjFrustum, fLODRatio);
+	if (m_pChild[CORNER_BR]) nTris = m_pChild[CORNER_BR]->_GenTriIndex(nTris, pIndex, pHeightMap, pObjFrustum, fLODRatio);
 
 	return nTris;
 }
@@ -249,11 +249,11 @@ BOOL QuadTree::Create(TERRAIN_VTX* pHeightMap)
 	return TRUE;
 }
 
-int QuadTree::GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio)
+int QuadTree::GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum, float fLODRatio)
 {
 	_InitAllCulled();
-	_FrustumCull(pHeightMap, pFrustum);
-	return _GenTriIndex(0, pIb, pHeightMap, pFrustum, fLODRatio);
+	_ObjFrustumCull(pHeightMap, pObjFrustum);
+	return _GenTriIndex(0, pIb, pHeightMap, pObjFrustum, fLODRatio);
 }
 int QuadTree::GenerateMapIdx(VOID* pIb, TERRAIN_VTX* pHeightMap)
 {
@@ -266,30 +266,30 @@ int QuadTree::GenerateMapIdx(VOID* pIb, TERRAIN_VTX* pHeightMap)
 	return nTris;
 }
 
-void QuadTree::_FrustumCull(TERRAIN_VTX* pHeightMap, Frustum* pFrustum)
+void QuadTree::_ObjFrustumCull(TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum)
 {
 	int ret;
 
-	ret = _IsInFrustum(pHeightMap, pFrustum);
+	ret = _IsInObjFrustum(pHeightMap, pObjFrustum);
 	switch (ret)
 	{
-	case FRUSTUM_COMPLETELY_IN:	// 프러스텀에 완전포함, 하위노드 검색 필요없음
+	case ObjFrustum_COMPLETELY_IN:	// 프러스텀에 완전포함, 하위노드 검색 필요없음
 		m_bCulled = FALSE;
 		return;
-	case FRUSTUM_PARTIALLY_IN:		// 프러스텀에 일부포함, 하위노드 검색 필요함
+	case ObjFrustum_PARTIALLY_IN:		// 프러스텀에 일부포함, 하위노드 검색 필요함
 		m_bCulled = FALSE;
 		break;
-	case FRUSTUM_OUT:				// 프러스텀에서 완전벗어남, 하위노드 검색 필요없음
+	case ObjFrustum_OUT:				// 프러스텀에서 완전벗어남, 하위노드 검색 필요없음
 		m_bCulled = TRUE;
 		return;
 	}
-	if (m_pChild[0]) m_pChild[0]->_FrustumCull(pHeightMap, pFrustum);
-	if (m_pChild[1]) m_pChild[1]->_FrustumCull(pHeightMap, pFrustum);
-	if (m_pChild[2]) m_pChild[2]->_FrustumCull(pHeightMap, pFrustum);
-	if (m_pChild[3]) m_pChild[3]->_FrustumCull(pHeightMap, pFrustum);
+	if (m_pChild[0]) m_pChild[0]->_ObjFrustumCull(pHeightMap, pObjFrustum);
+	if (m_pChild[1]) m_pChild[1]->_ObjFrustumCull(pHeightMap, pObjFrustum);
+	if (m_pChild[2]) m_pChild[2]->_ObjFrustumCull(pHeightMap, pObjFrustum);
+	if (m_pChild[3]) m_pChild[3]->_ObjFrustumCull(pHeightMap, pObjFrustum);
 }
 
-int QuadTree::_IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum)
+int QuadTree::_IsInObjFrustum(TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum)
 {
 
 	//Mesh detail이 1인경우엔 m_nCenter가 정상적이지 않아서 중점계산 해야된다.
@@ -309,25 +309,25 @@ int QuadTree::_IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum)
 	}
 	center.x /= 4.0f; center.y /= 4.0f; center.z /= 4.0f;
 
-	BOOL bInSphere = pFrustum->IsInSphere(&center, m_fRadius);
-	//BOOL bInSphere = pFrustum->IsInSphere((D3DXVECTOR3*)(pHeightMap + m_nCenter), m_fRadius);
+	BOOL bInSphere = pObjFrustum->IsInSphere(&center, m_fRadius);
+	//BOOL bInSphere = pObjFrustum->IsInSphere((D3DXVECTOR3*)(pHeightMap + m_nCenter), m_fRadius);
 	
 
 	//원 통째로 밖에 나가있다 -> out
 	if (!bInSphere) 
-		return FRUSTUM_OUT;
+		return ObjFrustum_OUT;
 
 	// 쿼드트리의 4정점 프러스텀 경계 테스트
 	for (int i = 0; i < 4; i++)
 	{
 		//하나라도 밖에 있다 -> 부분 내부
-		if (pFrustum->IsIn(vec[i]) == FALSE)
-			return FRUSTUM_PARTIALLY_IN;
+		if (pObjFrustum->IsIn(vec[i]) == FALSE)
+			return ObjFrustum_PARTIALLY_IN;
 	}
 
 
 	//모두내부
-	return FRUSTUM_COMPLETELY_IN;
+	return ObjFrustum_COMPLETELY_IN;
 
 
 }
@@ -455,7 +455,7 @@ int	QuadTree::_GetNodeIndex(int ed, int& _0, int& _1, int& _2, int& _3)
 	float n = (_0 + _1 + _2 + _3) / 4.0f;	// 가운데 인덱스
 
 	//맵 벗어나는거나 유효숫자 아니면
-	if (!MATH::IsInRange(n, 0, m_x * m_y - 1) || (n - (int)n != 0))
+	if (!MATH::IsInRange(n, 0.0f, (float)(m_x * m_y - 1)) || (n - (int)n != 0))
 		return -1;
 
 

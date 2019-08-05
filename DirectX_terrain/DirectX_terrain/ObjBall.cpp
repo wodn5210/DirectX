@@ -1,6 +1,6 @@
 #include "ObjBall.h"
 
-ObjBall::ObjBall(LPDIRECT3DDEVICE9 device, Terrain* terrain)
+ObjBall::ObjBall(LPDIRECT3DDEVICE9 device, ObjTerrain* terrain)
 {
 	m_device = device;
 	m_pTerrain = terrain;

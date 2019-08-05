@@ -4,7 +4,7 @@
 ObjTriangle::ObjTriangle(LPDIRECT3DDEVICE9 device)
 {
 	m_device = device;
-	m_fvf = D3DFVF_XYZ | D3DFVF_NORMAL;
+	//m_fvf = D3DFVF_XYZ | D3DFVF_NORMAL;
 }
 ObjTriangle::~ObjTriangle()
 {
@@ -17,8 +17,8 @@ ObjTriangle::~ObjTriangle()
 
 void ObjTriangle::DrawMain()
 {
-	m_device->SetStreamSource(0, m_pVB, 0, sizeof(CUSTOMVERTEX));
-	m_device->SetFVF(m_fvf);
+	m_device->SetStreamSource(0, m_pVB, 0, sizeof(TRI_VTX));
+	m_device->SetFVF(TRI_VTX::FVF);
 	m_device->SetIndices(m_pIB);
 	_InitMtrl();
 	m_matWorld = m_scale * m_translation;
@@ -28,8 +28,8 @@ void ObjTriangle::DrawMain()
 }
 void ObjTriangle::DrawMap()
 {
-	m_device->SetStreamSource(0, m_pVB, 0, sizeof(CUSTOMVERTEX));
-	m_device->SetFVF(m_fvf);
+	m_device->SetStreamSource(0, m_pVB, 0, sizeof(TRI_VTX));
+	m_device->SetFVF(TRI_VTX::FVF);
 	m_device->SetIndices(m_pIB);
 	_InitMtrl();
 	m_matWorld = m_bigScale * m_translation;
@@ -69,15 +69,15 @@ HRESULT ObjTriangle::_InitVB(D3DXVECTOR3 pos[3])
 	m_translation._42 = m_center.y;
 	m_translation._43 = m_center.z;
 	
-	CUSTOMVERTEX gm_Vertices[] =
+	TRI_VTX gm_Vertices[] =
 	{
 		{ pos[0],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
 		{ pos[1],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
 		{ pos[2],  D3DXVECTOR3(-1.0f,-1.0f, 0.0f), },
 	};
 	/// 정점버퍼 생성
-	if (FAILED(m_device->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX),
-		0, m_fvf,
+	if (FAILED(m_device->CreateVertexBuffer(3 * sizeof(TRI_VTX),
+		0, TRI_VTX::FVF,
 		D3DPOOL_DEFAULT, &m_pVB, NULL)))
 	{
 		return E_FAIL;
@@ -92,14 +92,15 @@ HRESULT ObjTriangle::_InitVB(D3DXVECTOR3 pos[3])
 
 	return S_OK;
 }
+
 HRESULT ObjTriangle::_InitIB()
 {
-	MYINDEX indices[] =
+	TRI_IDX indices[] =
 	{
 		{0, 1, 2},
 	};
 
-	if (FAILED(m_device->CreateIndexBuffer(1 * sizeof(MYINDEX), 0,
+	if (FAILED(m_device->CreateIndexBuffer(1 * sizeof(TRI_IDX), 0,
 		D3DFMT_INDEX16, D3DPOOL_DEFAULT, &m_pIB, NULL)))
 	{
 		return E_FAIL;

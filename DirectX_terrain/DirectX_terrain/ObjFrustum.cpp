@@ -1,9 +1,9 @@
-#include "Frustum.h"
+#include "ObjFrustum.h"
 
 
-Frustum::Frustum(LPDIRECT3DDEVICE9 pDev)
+ObjFrustum::ObjFrustum(LPDIRECT3DDEVICE9 pDev)
 {
-	g_pd3dDevice = pDev;
+	m_device = pDev;
 
 	// 투영행렬까지 거치면 모든 3차원 월드좌표의 점은 (-1,-1,0) ~ (1,1,1)사이의 값으로 바뀐다.
 	// m_projVTX에 이 동차공간의 경계값을 넣어둔다.
@@ -23,10 +23,10 @@ Frustum::Frustum(LPDIRECT3DDEVICE9 pDev)
 }
 
 
-HRESULT Frustum::Init()
+HRESULT ObjFrustum::Init()
 {
-	if (FAILED(g_pd3dDevice->CreateVertexBuffer(8 * sizeof(D3DXVECTOR3),
-		0, Frustum::_FVF, D3DPOOL_DEFAULT, &g_pVB, NULL)))
+	if (FAILED(m_device->CreateVertexBuffer(8 * sizeof(D3DXVECTOR3),
+		0, ObjFrustum::_FVF, D3DPOOL_DEFAULT, &g_pVB, NULL)))
 	{
 		return E_FAIL;
 	}
@@ -42,7 +42,7 @@ HRESULT Frustum::Init()
 	};
 
 
-	if (FAILED(g_pd3dDevice->CreateIndexBuffer(12 * sizeof(FRS_IDX), 0,
+	if (FAILED(m_device->CreateIndexBuffer(12 * sizeof(FRS_IDX), 0,
 		D3DFMT_INDEX16, D3DPOOL_DEFAULT, &g_pIB, NULL)))
 	{
 		return E_FAIL;
@@ -62,7 +62,7 @@ HRESULT Frustum::Init()
 
 
 
-HRESULT Frustum::FillVB()
+HRESULT ObjFrustum::FillVB()
 {
 	// Fill the vertex buffer.
 	VOID* pVertices;
@@ -78,8 +78,9 @@ HRESULT Frustum::FillVB()
 }
 
 // 카메라(view) * 프로젝션(projection)행렬을 입력받아 6개의 평면을 만든다.
-BOOL Frustum::Make(D3DXMATRIXA16* pmatViewProj, D3DXVECTOR3* pos)
+BOOL ObjFrustum::Make(D3DXMATRIXA16* pmatViewProj, D3DXVECTOR3* pos)
 {
+
 	m_vPos = *pos;	//카메라 좌표 설정
 
 	int				i;
@@ -115,7 +116,7 @@ BOOL Frustum::Make(D3DXMATRIXA16* pmatViewProj, D3DXVECTOR3* pos)
 }
 
 //프러스텀 안에 있으면 True
-BOOL	Frustum::IsIn(D3DXVECTOR3* pv)
+BOOL	ObjFrustum::IsIn(D3DXVECTOR3* pv)
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -131,7 +132,7 @@ BOOL	Frustum::IsIn(D3DXVECTOR3* pv)
 
 
 //경계구가 프러스텀 안에 있음?
-BOOL	Frustum::IsInSphere(D3DXVECTOR3* pv, float radius)
+BOOL	ObjFrustum::IsInSphere(D3DXVECTOR3* pv, float radius)
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -146,34 +147,34 @@ BOOL	Frustum::IsInSphere(D3DXVECTOR3* pv, float radius)
 }
 
 // 프러스텀을 화면에 그려준다.
-BOOL	Frustum::Draw()
+BOOL	ObjFrustum::Draw()
 {
-	g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(D3DXVECTOR3));
-	g_pd3dDevice->SetFVF(Frustum::_FVF);
-	g_pd3dDevice->SetIndices(g_pIB);
-	g_pd3dDevice->SetTexture(0, NULL);
-	g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	g_pd3dDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
-	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+	m_device->SetStreamSource(0, g_pVB, 0, sizeof(D3DXVECTOR3));
+	m_device->SetFVF(ObjFrustum::_FVF);
+	m_device->SetIndices(g_pIB);
+	m_device->SetTexture(0, NULL);
+	m_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	m_device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	m_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	m_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	m_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 
 
-	D3DXMATRIXA16 matWorld;
-	D3DXMatrixIdentity(&matWorld);
-	g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	
+	D3DXMatrixIdentity(&m_matWorld);
+	m_device->SetTransform(D3DTS_WORLD, &m_matWorld);
 
 	// 파란색으로 상,하 평면을 그린다.
-	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+	m_device->SetRenderState(D3DRS_LIGHTING, TRUE);
 
 	D3DMATERIAL9 mtrl;
 	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
 	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
-	g_pd3dDevice->SetMaterial(&mtrl);
+	m_device->SetMaterial(&mtrl);
 
-	g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
-	g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	g_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	m_device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+	m_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	m_device->SetRenderState(D3DRS_LIGHTING, FALSE);
 
 	return TRUE;
 

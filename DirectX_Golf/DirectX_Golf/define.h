@@ -1,15 +1,16 @@
 #pragma once
 #define GRAVITY 0.0098f
-#define PI 3.141592f
-#define Epsilon 0.00005f
+#define EPSILON 0.00005f
+
+#include <stdio.h>
 #include <vector>
 #include <string>
+#include <d3dx9.h>
 
 struct TRI_IDX
 {
 	WORD _0, _1, _2;
 };
-
 struct TRI_VTX
 {
 	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_NORMAL) };
@@ -33,7 +34,13 @@ struct BALL_VTX
 };
 struct SKY_VTX
 {
-	enum _FVF { FVF = (D3DFVF_XYZ| D3DFVF_TEX1) };
+	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_TEX1) };
+	D3DXVECTOR3	p;
+	D3DXVECTOR2	t;
+};
+struct BNT_VTX
+{
+	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_TEX1) };
 	D3DXVECTOR3	p;
 	D3DXVECTOR2	t;
 };
@@ -54,7 +61,6 @@ struct BAR_VTX
 {
 	enum _FVF { FVF = (D3DFVF_XYZ) };
 	D3DXVECTOR3	p;
-
 };
 
 

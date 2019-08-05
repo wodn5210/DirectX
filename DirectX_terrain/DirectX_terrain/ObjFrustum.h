@@ -1,8 +1,8 @@
 #pragma once
 #include <d3dx9.h>
-
+#include "ObjGraphic.h"
 //프러스텀 컬링 여유있게
-#define PLANE_EPSILON 5.0f
+#define PLANE_EPSILON 2.0f
 
 /*
 프러스팀 내부만 렌더링 목적
@@ -14,12 +14,13 @@ struct FRS_IDX
 };
 
 
-class Frustum
+class ObjFrustum 
+	: public ObjGraphic
 {
 private:
 	enum { _FVF = D3DFVF_XYZ};
 
-	LPDIRECT3DDEVICE9       g_pd3dDevice;
+	
 	LPDIRECT3DVERTEXBUFFER9 g_pVB;
 	LPDIRECT3DINDEXBUFFER9	g_pIB;
 
@@ -33,7 +34,7 @@ private:
 	D3DXPLANE	m_plane[6];	// 프러스텀을 구성하는 6개의 평면
 
 public:
-	Frustum(LPDIRECT3DDEVICE9 pDev = NULL);
+	ObjFrustum(LPDIRECT3DDEVICE9 pDev = NULL);
 
 	HRESULT Init();
 

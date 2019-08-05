@@ -4,7 +4,7 @@
 ObjTree2::ObjTree2(LPDIRECT3DDEVICE9 device)
 {
 	m_device = device;
-	D3DXMatrixScaling(&m_scale, 0.01, 0.01, 0.01);
+	D3DXMatrixScaling(&m_scale, 0.01f, 0.01f, 0.01f);
 	//D3DXMatrixScaling(&m_scale, 20, 20, 20);
 }
 ObjTree2::~ObjTree2()

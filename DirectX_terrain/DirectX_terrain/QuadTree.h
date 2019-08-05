@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "define.h"
-#include "Frustum.h"
+#include "ObjFrustum.h"
 #include "Ray.h"
 #include <stdio.h>
 
@@ -16,9 +16,9 @@ class QuadTree
 {
 	enum		CornerType { CORNER_TL, CORNER_TR, CORNER_BL, CORNER_BR };
 	enum			QuadLocation {
-		FRUSTUM_OUT = 0,			// 프러스텀에서 완전벗어남
-		FRUSTUM_PARTIALLY_IN = 1,	// 프러스텀에 부분포함
-		FRUSTUM_COMPLETELY_IN = 2,	// 프러스텀에 완전포함
+		ObjFrustum_OUT = 0,			// 프러스텀에서 완전벗어남
+		ObjFrustum_PARTIALLY_IN = 1,	// 프러스텀에 부분포함
+		ObjFrustum_COMPLETELY_IN = 2,	// 프러스텀에 완전포함
 	};
 	
 	enum { EDGE_UP, EDGE_DN, EDGE_LT, EDGE_RT };
@@ -50,7 +50,7 @@ public:
 
 
 	BOOL Create(TERRAIN_VTX* pHeightMap);
-	int GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio);
+	int GenerateIndex(VOID* pIb, TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum, float fLODRatio);
 	int GenerateMapIdx(VOID* pIb, TERRAIN_VTX* pHeightMap);
 	void GetCorner(int& _0, int& _1, int& _2, int& _3)
 	{
@@ -65,10 +65,10 @@ private:
 	QuadTree* _AddChild(int TL, int TR, int BL, int BR);
 	BOOL _SubDivide();
 
-	int	_GenTriIndex(int nTris, VOID* pIndex, TERRAIN_VTX* pHeightMap, Frustum* pFrustum, float fLODRatio);
+	int	_GenTriIndex(int nTris, VOID* pIndex, TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum, float fLODRatio);
 
-	void _FrustumCull(TERRAIN_VTX* pHeightMap, Frustum* pFrustum);
-	int _IsInFrustum(TERRAIN_VTX* pHeightMap, Frustum* pFrustum);
+	void _ObjFrustumCull(TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum);
+	int _IsInObjFrustum(TERRAIN_VTX* pHeightMap, ObjFrustum* pObjFrustum);
 
 	// 이웃노드를 만든다.(삼각형 찢어짐 방지용)
 	void		_BuildNeighborNode(QuadTree* pRoot, TERRAIN_VTX* pHeightMap);

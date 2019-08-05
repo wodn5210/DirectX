@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\Scene">
+      <UniqueIdentifier>{6ff20a68-137f-40a4-ab8f-0dd3c804f49e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{402a6c43-64ff-492f-b500-882fd9090b36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Scene">
+      <UniqueIdentifier>{65dae7c4-7853-42b6-9992-b4cfb558b31b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Obj">
+      <UniqueIdentifier>{23f1b515-8504-4b72-89be-fecc3e85a145}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Obj">
+      <UniqueIdentifier>{81697d20-4769-4ff7-be40-d8b4d5e451c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Cam">
+      <UniqueIdentifier>{464ec73b-dd6c-4278-9af1-d7b980e0a53e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Cam">
+      <UniqueIdentifier>{b1a09dbc-5847-446e-b2be-04e0341e5a4e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneStart.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjButton.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="CamMain.cpp">
+      <Filter>소스 파일\Cam</Filter>
+    </ClCompile>
+    <ClCompile Include="CamMiniMap.cpp">
+      <Filter>소스 파일\Cam</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneEnd.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneGame.cpp">
+      <Filter>소스 파일\Scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="define.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>헤더 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneStart.h">
+      <Filter>헤더 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjGraphic.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjButton.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="Cam.h">
+      <Filter>헤더 파일\Cam</Filter>
+    </ClInclude>
+    <ClInclude Include="CamMain.h">
+      <Filter>헤더 파일\Cam</Filter>
+    </ClInclude>
+    <ClInclude Include="CamMiniMap.h">
+      <Filter>헤더 파일\Cam</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEnd.h">
+      <Filter>헤더 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneGame.h">
+      <Filter>헤더 파일\Scene</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

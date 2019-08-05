@@ -107,8 +107,8 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			energy = (float)(eT - sT) / (CLOCKS_PER_SEC*5);
 			//printf("energy = %f\n", energy);
 			sT = eT = 0;
-			if (energy >= 0.7)
-				energy = 0.7;
+			if (energy >= 0.7f)
+				energy = 0.7f;
 			engine.SetBallJump(energy);
 
 			break;
@@ -145,10 +145,6 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 					  "D3D Tutorial", NULL };
 	RegisterClassEx(&wc);
 
-	//크기조절 가능
-	/*HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
-		WS_OVERLAPPEDWINDOW, -0, 0, WIDTH, HEIGHT,
-		GetDesktopWindow(), NULL, wc.hInstance, NULL);*/
 
 	//크기조절 불가
 	HWND hWnd = CreateWindow("D3D Tutorial", "D3D Terrain",
@@ -156,11 +152,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
 
 	START_CONSOLE();  //// 디버그 콘솔 시작
-	//vector<TREE2_VTX> vt;
-	//vector<TRI_IDX> idx_leaves;
-	//vector<TRI_IDX> idx_trunk;
-	//if (FIleReadObj::ReadObj("src/golf/obj/low_poly_tree.obj", vt, &idx_leaves, &idx_trunk))
-	//	printf("성공");
+
 	
 	if (SUCCEEDED(engine.InitD3D(hWnd)) &&
 		SUCCEEDED(engine.InitCam()) &&

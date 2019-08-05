@@ -13,54 +13,78 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Cam">
+      <UniqueIdentifier>{3ad87b5b-b204-4bf1-be13-caeaaa4d715f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Cam">
+      <UniqueIdentifier>{8a20649b-2ea4-4c9c-8d93-548069a35ddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Obj">
+      <UniqueIdentifier>{0158fdbe-04a1-49f9-a1e6-41d02ddac587}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Obj">
+      <UniqueIdentifier>{28896949-555c-4497-94ec-8c25bf545ffc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Ect">
+      <UniqueIdentifier>{509f8dcd-7a28-42a9-a322-670ecba9aede}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Ect">
+      <UniqueIdentifier>{e1643e34-434b-41c4-96a7-d89d6343e568}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Scene">
+      <UniqueIdentifier>{b6d28577-9d37-49f0-8da1-25b4898719b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Scene">
+      <UniqueIdentifier>{6520dbc0-bb3a-47ab-bb15-b1b2d0d96b96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Frustum.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadTree.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Terrain.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Dib.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Ray.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="CamMain.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Cam</Filter>
     </ClCompile>
     <ClCompile Include="CamMiniMap.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Cam</Filter>
     </ClCompile>
     <ClCompile Include="ObjTriangle.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjBall.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjSkyBox.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjHole.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjTree1.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjProgressbar.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Obj</Filter>
     </ClCompile>
     <ClCompile Include="ObjTree2.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjTree1.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjSkyBox.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjProgressbar.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjHole.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjBall.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjFrustum.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjTerrain.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="Dib.cpp">
+      <Filter>소스 파일\Ect</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTree.cpp">
+      <Filter>소스 파일\Ect</Filter>
+    </ClCompile>
+    <ClCompile Include="Ray.cpp">
+      <Filter>소스 파일\Ect</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,59 +92,62 @@
     <ClInclude Include="Engine.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Frustum.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="QuadTree.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Terrain.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Dib.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="define.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Ray.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="Cam.h">
+      <Filter>헤더 파일\Cam</Filter>
     </ClInclude>
     <ClInclude Include="CamMain.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Cam</Filter>
     </ClInclude>
     <ClInclude Include="CamMiniMap.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Cam</Filter>
     </ClInclude>
-    <ClInclude Include="Cam.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjGraphic.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjTriangle.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="ObjFrustum.h">
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
     <ClInclude Include="ObjBall.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
-    <ClInclude Include="ObjSkyBox.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="ObjGraphic.h">
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
     <ClInclude Include="ObjHole.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjTree1.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
     <ClInclude Include="ObjProgressbar.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
-    <ClInclude Include="FIleReadObj.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="ObjSkyBox.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTree1.h">
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
     <ClInclude Include="ObjTree2.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTriangle.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTerrain.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>헤더 파일\Ect</Filter>
+    </ClInclude>
+    <ClInclude Include="Dib.h">
+      <Filter>헤더 파일\Ect</Filter>
+    </ClInclude>
+    <ClInclude Include="FIleReadObj.h">
+      <Filter>헤더 파일\Ect</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTree.h">
+      <Filter>헤더 파일\Ect</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>헤더 파일\Ect</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>헤더 파일\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

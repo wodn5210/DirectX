@@ -6,7 +6,7 @@ class ObjSkyBox :
 	public ObjGraphic
 {
 private:
-	LPDIRECT3DDEVICE9 m_device;
+	//LPDIRECT3DDEVICE9 m_device;
 
 	LPDIRECT3DVERTEXBUFFER9 m_pVB;
 	LPDIRECT3DINDEXBUFFER9	m_pIB;

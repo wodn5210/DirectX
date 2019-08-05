@@ -54,7 +54,7 @@ public:
 				fgets(lineHeader, MAX_NAME_LEN, file);
 				
 				
-				unsigned int vtIdx[5], uvIdx[5], normIdx[5];
+				WORD vtIdx[5], uvIdx[5], normIdx[5];
 				char* p = lineHeader;
 				int i;
 				for (i = 0; i < 5; ++i) 
@@ -62,17 +62,17 @@ public:
 					while (*p == ' ' || *p == '\t') p++;
 					if (*p == '\0' || *p == '\r' || *p == '\n') break;
 
-					vtIdx[i] = strtoul(p, &p, 10);
+					vtIdx[i] = (WORD)(strtoul(p, &p, 10));
 					vtIdx[i]--;
 					//vertex말고는 다 무시
 					if (*p && *p == '/') 
 					{
 						p++;
-						uvIdx[i] = strtoul(p, &p, 10);
+						uvIdx[i] = (WORD)strtoul(p, &p, 10);
 						if (*p && *p == '/') 
 						{
 							p++;
-							normIdx[i] = strtoul(p, &p, 10);
+							normIdx[i] = (WORD)strtoul(p, &p, 10);
 						}
 					}
 
@@ -94,10 +94,10 @@ public:
 				
 			}
 		}
-		center /= vt.size();
-		printf("%.3f %.3f %.3f\n", center.x, center.y, center.z);
+		center /= (float)vt.size();
 
-		for (int i = 0; i < vt.size(); i++)
+
+		for (unsigned int i = 0; i < vt.size(); i++)
 		{
 
 			vt[i].n -= center;

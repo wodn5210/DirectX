@@ -1,6 +1,6 @@
 #pragma once
 #include "ObjGraphic.h"
-#include "Terrain.h"
+#include "ObjTerrain.h"
 #include "define.h"
 
 
@@ -10,7 +10,7 @@ class ObjBall :
 private:
 
 	LPD3DXMESH m_lpMesh;
-	Terrain* m_pTerrain;
+	ObjTerrain* m_pTerrain;
 
 
 	D3DXVECTOR3 m_vAcc;		// ∞°º”µµ ∫§≈Õ
@@ -24,7 +24,7 @@ private:
 	HRESULT _InitMtrl();
 
 public:
-	ObjBall(LPDIRECT3DDEVICE9 device, Terrain* terrain);
+	ObjBall(LPDIRECT3DDEVICE9 device, ObjTerrain* terrain);
 	~ObjBall();
 
 	void DrawMain();

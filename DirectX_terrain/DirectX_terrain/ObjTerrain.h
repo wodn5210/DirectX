@@ -4,8 +4,9 @@
 #include <vector>
 #include <string>
 
+#include "ObjGraphic.h"
 #include "QuadTree.h"
-#include "Frustum.h"
+#include "ObjFrustum.h"
 #include "Ray.h"
 
 #include "define.h"
@@ -18,18 +19,18 @@ using namespace std;
 
 
 
-class Terrain
+class ObjTerrain
+	:public ObjGraphic
 {
 private:
 	//정점과 인덱스가 들어있는 변수 시작번지
 	//각 data type으로 형 변환을 잘 고려해서 접근해야한다
 
-	int center[3];			// 지형을 설치할 중점
 	int m_x, m_z;		// 높이맵의 x, y, z(z는 최대높이값) 크기
 	float m_y;
-	D3DXVECTOR3 m_scale;		// x, y, z축 scale
+	D3DXVECTOR3 m_mapscale;		// x, y, z축 scale
 	TERRAIN_VTX* m_pHeightMap;
-	LPDIRECT3DDEVICE9		m_pd3dDevice;
+	//LPDIRECT3DDEVICE9		m_pd3dDevice;
 	vector<LPDIRECT3DTEXTURE9> m_vTex;
 	LPDIRECT3DVERTEXBUFFER9	m_pVB;
 	LPDIRECT3DINDEXBUFFER9	m_pIB;
@@ -40,12 +41,12 @@ private:
 	QuadTree* m_pQuadTree;	
 
 public:
-	Terrain();
-	~Terrain();
+	ObjTerrain();
+	~ObjTerrain();
 
 	HRESULT Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* scale, float fLODRatio,
 		string heightmap_dir, vector<string> texture_dir);
-	HRESULT		DrawMain(Frustum* pFrustum);
+	HRESULT		DrawMain(ObjFrustum* pObjFrustum);
 	HRESULT		DrawMap();
 
 	VOID MeshPicking(Ray ray, float& dist, D3DXVECTOR3 pos[3]);

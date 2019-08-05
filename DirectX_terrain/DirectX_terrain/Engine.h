@@ -17,8 +17,8 @@
 #include "ObjTree1.h"
 #include "ObjTree2.h"
 #include "ObjProgressbar.h"
-#include "Frustum.h"
-#include "Terrain.h"
+#include "ObjFrustum.h"
+#include "ObjTerrain.h"
 #include "Ray.h"
 
 
@@ -27,52 +27,45 @@ using namespace std;
 
 const string tex_dir[2] = { "src/tile2.tga", "lightmap.tga" };
 
-struct CUSTOM
-{
-	D3DXVECTOR3 pos;
-	D3DXVECTOR3 normal;
-};
-#define _FVF (D3DFVF_XYZ | D3DFVF_NORMAL)
-
 class Engine
 {
 private:
 	D3DXVECTOR3 temp[2];
 	LPDIRECT3DVERTEXBUFFER9 m_tempVB;
 
-	HWND					g_hwnd;
-	LPDIRECT3D9             g_pD3D;
-	LPDIRECT3DDEVICE9       g_pd3dDevice;
+	HWND					m_hwnd;
+	LPDIRECT3D9             m_pD3D;
+	LPDIRECT3DDEVICE9       m_device;
 
 	WORD					m_winSizeX;
 	WORD					m_winSizeY;
 
 
 	//클릭한 삼각형 출력용
-	ObjTriangle* m_tri;
-	ObjBall* m_ball;
-	ObjSkyBox* m_skybox;
-	ObjHole* m_hole;
-	ObjTree1* m_tree1;
-	ObjTree2* m_tree2;
-	ObjProgressbar* m_bar;
-	
+	ObjTriangle* m_pTri;
+	ObjBall* m_pBall;
+	ObjSkyBox* m_pSkybox;
+	ObjHole* m_pHole;
+	ObjTree1* m_pTree1;
+	ObjTree2* m_pTree2;
+	ObjProgressbar* m_pBar;
+	ObjTerrain* m_pTerrain;
+	ObjFrustum* m_pFrustum;
 
-	CamMain* m_CamMain;
-	CamMiniMap* m_CamMap;
+	CamMain* m_pCamMain;
+	CamMiniMap* m_pCamMap;
 
-	Terrain* g_pTerrain;
-	Frustum* g_pFrustum;
 
-	BOOL					g_bHideFrustum = TRUE;	// Frustum을 안그릴 것인가?
-	BOOL					g_bLockFrustum = FALSE;	// Frustum을 고정할 것인가?
-	BOOL					g_bWireframe = FALSE;	// 와이어프레임으로 그릴것인가?
-	BOOL					g_bSelectTriOn = FALSE;	// 선택한 삼각형 빨강색으로 그리기
-	BOOL					g_bBallCamera = FALSE;
-	BOOL					g_bBallJump = FALSE;
-	BOOL					g_bBallEnergyView = FALSE;
-	float					g_BallEnergy = 0;
-	int						g_BallState = 1;
+
+	BOOL					m_bHideFrustum = TRUE;	// Frustum을 안그릴 것인가?
+	BOOL					m_bLockFrustum = FALSE;	// Frustum을 고정할 것인가?
+	BOOL					m_bWireframe = FALSE;	// 와이어프레임으로 그릴것인가?
+	BOOL					m_bSelectTriOn = FALSE;	// 선택한 삼각형 빨강색으로 그리기
+	BOOL					m_bBallCamera = FALSE;
+	BOOL					m_bBallJump = FALSE;
+	BOOL					m_bBallEnergyView = FALSE;
+	float					m_BallEnergy = 0;
+	int						m_BallState = 1;
 
 private:
 
@@ -99,25 +92,25 @@ public:
 
 	VOID SetFrustum()
 	{
-		g_bLockFrustum = !g_bLockFrustum;
-		g_bHideFrustum = !g_bLockFrustum;
+		m_bLockFrustum = !m_bLockFrustum;
+		m_bHideFrustum = !m_bLockFrustum;
 	}
 	VOID SetWire()
 	{
-		g_bWireframe = !g_bWireframe;
+		m_bWireframe = !m_bWireframe;
 	}
 	VOID SetSelectOff()
 	{
-		g_bSelectTriOn = FALSE;
+		m_bSelectTriOn = FALSE;
 	}
 	VOID SetBallCamera()
 	{
-		g_bBallCamera = !g_bBallCamera;
-		if (g_bBallCamera)
+		m_bBallCamera = !m_bBallCamera;
+		if (m_bBallCamera)
 		{
-			D3DXVECTOR3* ballPos = m_ball->GetCenter();
-			m_CamMain->SetBallPosP(ballPos);
-			m_CamMain->SetBallView(&D3DXVECTOR3(0, 1, 0));
+			D3DXVECTOR3* ballPos = m_pBall->GetCenter();
+			m_pCamMain->SetBallPosP(ballPos);
+			m_pCamMain->SetBallView(&D3DXVECTOR3(0, 1, 0));
 
 		}
 	}
@@ -126,7 +119,7 @@ public:
 
 	VOID MouseMove(WORD x, WORD y);
 
-	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_ball->SetBallSpdAdd(spd); }
+	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_pBall->SetBallSpdAdd(spd); }
 
 
 	//ball 기준으로 세팅된 카메라의 회전
@@ -135,10 +128,10 @@ public:
 	VOID SetBallJump(float energy);
 	VOID SetEnergyView(float energy)
 	{
-		if (energy >= 0.7 || g_bBallJump)
+		if (energy >= 0.7 || m_bBallJump)
 			return;
-		g_bBallEnergyView = TRUE;
-		g_BallEnergy = energy;
+		m_bBallEnergyView = TRUE;
+		m_BallEnergy = energy;
 	}
 	;
 
