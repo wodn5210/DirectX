@@ -34,7 +34,6 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	//아무것도 안눌렀으면 return -1되서 옴
 	engine.MsgProc(hWnd, msg, wParam, lParam);
 	
 

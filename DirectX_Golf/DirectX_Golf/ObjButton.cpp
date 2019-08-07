@@ -53,6 +53,11 @@ void ObjButton::DrawMain()
 }
 HRESULT ObjButton::Create(LPDIRECT3DDEVICE9 device, string path)
 {
+	if (device == NULL) 
+	{
+		printf("BNT device NULL!!\n");
+		return E_FAIL;
+	}
 	m_device = device;
 
 

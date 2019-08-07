@@ -23,6 +23,8 @@ private:
 	SceneGame* m_pSceneGame;
 	SceneEnd* m_pSceneEnd;
 
+
+
 private:
 	VOID _InitScene();
 
@@ -35,7 +37,9 @@ public:
 
 	HRESULT Init(HWND hWnd);
 	VOID MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	
+
+
+
 	VOID Rendering();
 };
 

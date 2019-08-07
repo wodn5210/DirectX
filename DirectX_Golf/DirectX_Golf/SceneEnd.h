@@ -16,18 +16,19 @@ private:
 	CamMain* m_pCamMain;
 
 private:
-	VOID _readyRender();
-	int _bntSearch(int x, int y);
+	VOID _ReadyRender();
+	int _BntSearch(int x, int y);
 
+	HRESULT _InitCam();
+	HRESULT _InitLight();
+	HRESULT _InitObj();
 
 public:
 	~SceneEnd();
 
 	HRESULT Create(LPDIRECT3DDEVICE9 device, HWND hWnd);
 
-	HRESULT InitCam();
-	HRESULT InitLight();
-	HRESULT InitObj();
+	
 	VOID Rendering();
 	int MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };

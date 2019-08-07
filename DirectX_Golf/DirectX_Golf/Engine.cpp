@@ -67,41 +67,50 @@ VOID Engine::_InitScene()
 	m_nowPhase = START;
 
 
+	m_pSceneGame = NULL;
 	m_pSceneEnd = NULL;
-
+	
 
 	m_pNowScene = m_pSceneStart;
 }
 
+
 VOID Engine::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	//어떤 이벤트 들어오면
+	//어떤 이벤트 들어올땐 화면이 켜져있어야함
 	if (m_pNowScene != NULL)
 	{
 		int select = m_pNowScene->MsgProcess(hWnd, msg, wParam, lParam);
+
 		switch (select)
 		{
 		case 0:
+			//이미 비어있다면 다른 함수에서 진행중임
+			if (m_pNowScene == NULL)
+				break;
 			delete m_pNowScene;
-			if (m_nowPhase == START)
+			if (m_nowPhase == START || m_nowPhase == END)
 			{
+				/*if(m_pSceneStart != NULL)
+					delete m_pSceneStart;
+				else
+					delete m_pSceneEnd;*/
+				m_pSceneGame = new SceneGame();
+				m_pSceneGame->Create(m_device, m_hwnd);
+				m_pNowScene = m_pSceneGame;
+				m_nowPhase = GAME;
+			}
+			//여기아래 게임 넣으면 변경해야함
+			else if (m_nowPhase == GAME)
+			{
+				printf("hitcount = %d\n", msg);
+				//delete m_pSceneGame;
 				m_pSceneEnd = new SceneEnd();
 				m_pSceneEnd->Create(m_device, m_hwnd);
 				m_pNowScene = m_pSceneEnd;
 				m_nowPhase = END;
 			}
-			//여기아래 게임 넣으면 변경해야함
-			else if (m_nowPhase == GAME)
-			{
-
-			}
-			else if (m_nowPhase == END)
-			{
-				m_pSceneStart = new SceneStart();
-				m_pSceneStart->Create(m_device, m_hwnd);
-				m_pNowScene = m_pSceneStart;
-				m_nowPhase = START;
-			}
+			
 			break;
 		case 1:
 			PostMessage(hWnd, WM_DESTROY, 0, 0L);

@@ -56,6 +56,45 @@
     <ClCompile Include="SceneGame.cpp">
       <Filter>소스 파일\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="CamBall.cpp">
+      <Filter>소스 파일\Cam</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjFrustum.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="Dib.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTree.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjTerrain.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="Ray.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjBall.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjSkyBox.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjHole.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjGauge.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjTreeTexture.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjTreeObjFile.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjTriangle.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="define.h">
@@ -90,6 +129,48 @@
     </ClInclude>
     <ClInclude Include="SceneGame.h">
       <Filter>헤더 파일\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CamBall.h">
+      <Filter>헤더 파일\Cam</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjFrustum.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="Dib.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadTree.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTerrain.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjBall.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjSkyBox.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjHole.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="FIleReadObj.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjGauge.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTreeTexture.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTreeObjFile.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjTriangle.h">
+      <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

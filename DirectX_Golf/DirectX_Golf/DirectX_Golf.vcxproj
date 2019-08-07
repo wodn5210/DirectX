@@ -19,23 +19,50 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CamBall.cpp" />
     <ClCompile Include="CamMain.cpp" />
     <ClCompile Include="CamMiniMap.cpp" />
+    <ClCompile Include="Dib.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ObjBall.cpp" />
     <ClCompile Include="ObjButton.cpp" />
+    <ClCompile Include="ObjFrustum.cpp" />
+    <ClCompile Include="ObjHole.cpp" />
+    <ClCompile Include="ObjGauge.cpp" />
+    <ClCompile Include="ObjSkyBox.cpp" />
+    <ClCompile Include="ObjTerrain.cpp" />
+    <ClCompile Include="ObjTreeTexture.cpp" />
+    <ClCompile Include="ObjTreeObjFile.cpp" />
+    <ClCompile Include="ObjTriangle.cpp" />
+    <ClCompile Include="QuadTree.cpp" />
+    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="SceneEnd.cpp" />
     <ClCompile Include="SceneGame.cpp" />
     <ClCompile Include="SceneStart.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cam.h" />
+    <ClInclude Include="CamBall.h" />
     <ClInclude Include="CamMain.h" />
     <ClInclude Include="CamMiniMap.h" />
     <ClInclude Include="define.h" />
+    <ClInclude Include="Dib.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="FIleReadObj.h" />
+    <ClInclude Include="ObjBall.h" />
     <ClInclude Include="ObjButton.h" />
+    <ClInclude Include="ObjFrustum.h" />
     <ClInclude Include="ObjGraphic.h" />
+    <ClInclude Include="ObjHole.h" />
+    <ClInclude Include="ObjGauge.h" />
+    <ClInclude Include="ObjSkyBox.h" />
+    <ClInclude Include="ObjTerrain.h" />
+    <ClInclude Include="ObjTreeTexture.h" />
+    <ClInclude Include="ObjTreeObjFile.h" />
+    <ClInclude Include="ObjTriangle.h" />
+    <ClInclude Include="QuadTree.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneEnd.h" />
     <ClInclude Include="SceneGame.h" />
@@ -53,7 +80,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>NotSet</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
