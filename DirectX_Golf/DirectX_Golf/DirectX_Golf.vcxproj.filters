@@ -95,6 +95,12 @@
     <ClCompile Include="ObjTriangle.cpp">
       <Filter>소스 파일\Obj</Filter>
     </ClCompile>
+    <ClCompile Include="ObjDust.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjBallGori.cpp">
+      <Filter>소스 파일\Obj</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="define.h">
@@ -170,6 +176,12 @@
       <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
     <ClInclude Include="ObjTriangle.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjDust.h">
+      <Filter>헤더 파일\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjBallGori.h">
       <Filter>헤더 파일\Obj</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjGraphic.h"
 #include "ObjTerrain.h"
+
 #include "define.h"
 
 
@@ -41,6 +42,8 @@ public:
 	
 	float GetR() { return m_r; }
 	STATE GetState(){ return m_nowState; }
+	D3DXVECTOR3* GetDir() { return &m_vSpeed; }
+
 
 	void Reset() 
 	{ 
@@ -52,7 +55,7 @@ public:
 
 	//물리적 요소를 반영한 움직임 하자
 	//현재 위치의 지형vertex
-	STATE MovePhysical(D3DXVECTOR3 terrain[3] = 0);
+	STATE MovePhysical(BOOL& dust);
 	VOID SetBallSpdAdd(D3DXVECTOR3 spd) { m_vSpeed += spd; };
 	VOID SetBallJump(float energy, D3DXVECTOR3* pView);
 	

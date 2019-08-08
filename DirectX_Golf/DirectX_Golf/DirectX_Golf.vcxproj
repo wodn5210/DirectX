@@ -26,10 +26,12 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ObjBall.cpp" />
+    <ClCompile Include="ObjBallGori.cpp" />
     <ClCompile Include="ObjButton.cpp" />
     <ClCompile Include="ObjFrustum.cpp" />
     <ClCompile Include="ObjHole.cpp" />
     <ClCompile Include="ObjGauge.cpp" />
+    <ClCompile Include="ObjDust.cpp" />
     <ClCompile Include="ObjSkyBox.cpp" />
     <ClCompile Include="ObjTerrain.cpp" />
     <ClCompile Include="ObjTreeTexture.cpp" />
@@ -51,11 +53,13 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FIleReadObj.h" />
     <ClInclude Include="ObjBall.h" />
+    <ClInclude Include="ObjBallGori.h" />
     <ClInclude Include="ObjButton.h" />
     <ClInclude Include="ObjFrustum.h" />
     <ClInclude Include="ObjGraphic.h" />
     <ClInclude Include="ObjHole.h" />
     <ClInclude Include="ObjGauge.h" />
+    <ClInclude Include="ObjDust.h" />
     <ClInclude Include="ObjSkyBox.h" />
     <ClInclude Include="ObjTerrain.h" />
     <ClInclude Include="ObjTreeTexture.h" />

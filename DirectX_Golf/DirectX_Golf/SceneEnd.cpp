@@ -8,12 +8,17 @@ SceneEnd::~SceneEnd()
 		delete m_pEndBnt;
 	if (m_pCamMain != NULL)
 		delete m_pCamMain;
+	if (m_pSprite != NULL)
+		m_pSprite->Release();
+	if (m_pFont != NULL)
+		m_pFont->Release();
 }
 
-HRESULT SceneEnd::Create(LPDIRECT3DDEVICE9 device, HWND hWnd)
+HRESULT SceneEnd::Create(LPDIRECT3DDEVICE9 device, HWND hWnd, int hitCount)
 {
 	Scene::Create(device, hWnd);
 
+	m_hitCount = hitCount;
 	_InitCam();
 	_InitObj();
 
@@ -54,6 +59,11 @@ HRESULT SceneEnd::_InitObj()
 	m_pEndBnt->Create(m_device, "src/golf/GameEnd2.bmp");
 	m_pEndBnt->SetDrawPos(pos_end[0], pos_end[1]);
 
+
+	//SetupºÎºÐ
+	D3DXCreateFont(m_device, 25, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "±¼¸²Ã¼", &m_pFont);
+	D3DXCreateSprite(m_device, &m_pSprite);
+
 	return S_OK;
 }
 VOID SceneEnd::_ReadyRender()
@@ -64,6 +74,25 @@ VOID SceneEnd::_ReadyRender()
 	D3DXMATRIXA16 matViewProj = (*m_pCamMain->GetViewMatrix()) * (*m_pCamMain->GetProjMatrix());
 	m_pReStartBnt->ReadyRender(&matViewProj);
 	m_pEndBnt->ReadyRender(&matViewProj);
+
+}
+VOID SceneEnd::_RenderText()
+{
+	if (m_pSprite == NULL)
+		return;
+
+
+	m_pSprite->Begin(D3DXSPRITE_ALPHABLEND | D3DXSPRITE_SORT_TEXTURE);
+	RECT rt = { 290,300,0,0 };
+	string name = "   Hit Score";
+	m_pFont->DrawText(m_pSprite, name.c_str(), -1, &rt, DT_NOCLIP, D3DCOLOR_XRGB(255, 0, 0));
+
+
+	rt.top = 340;
+	rt.left = 375;
+	string score = to_string(m_hitCount);
+	m_pFont->DrawText(m_pSprite, score.c_str(), -1, &rt, DT_NOCLIP, D3DCOLOR_XRGB(255, 255, 0));
+	m_pSprite->End();
 
 }
 VOID SceneEnd::Rendering()
@@ -81,6 +110,8 @@ VOID SceneEnd::Rendering()
 	{
 		m_pReStartBnt->DrawMain();
 		m_pEndBnt->DrawMain();
+
+		_RenderText();
 
 		m_device->EndScene();
 	}

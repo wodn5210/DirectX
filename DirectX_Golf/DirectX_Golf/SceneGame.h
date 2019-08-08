@@ -17,6 +17,9 @@
 #include "ObjTreeTexture.h"
 #include "ObjTreeObjFile.h"
 #include "ObjTriangle.h"
+#include "ObjDust.h"
+#include "ObjBallGori.h"
+
 
 class SceneGame :
 	public Scene
@@ -39,14 +42,18 @@ private:
 	ObjTreeTexture* m_pTreeTex;
 	ObjTreeObjFile* m_pTreeObj;
 	ObjTriangle* m_pTri;
+	ObjDust* m_pDust;
+	ObjBallGori* m_pGori;
 
 	BOOL m_bRenderFrustum;
 	BOOL m_bBallCam;
 	BOOL m_bWireRender;
 	ObjBall::STATE m_ballState;
+	BOOL m_bBallImpact;
 	BOOL m_bSpaceBar;
 	BOOL m_bEndGame;
 	BOOL m_bSelectMeshRender;
+	BOOL m_bGoriInit;
 	float m_BallEnergy;
 	time_t m_sT = 0, m_eT = 0;
 

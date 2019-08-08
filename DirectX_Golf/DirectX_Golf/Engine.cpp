@@ -91,10 +91,7 @@ VOID Engine::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			delete m_pNowScene;
 			if (m_nowPhase == START || m_nowPhase == END)
 			{
-				/*if(m_pSceneStart != NULL)
-					delete m_pSceneStart;
-				else
-					delete m_pSceneEnd;*/
+
 				m_pSceneGame = new SceneGame();
 				m_pSceneGame->Create(m_device, m_hwnd);
 				m_pNowScene = m_pSceneGame;
@@ -103,10 +100,9 @@ VOID Engine::MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			//여기아래 게임 넣으면 변경해야함
 			else if (m_nowPhase == GAME)
 			{
-				printf("hitcount = %d\n", msg);
-				//delete m_pSceneGame;
+
 				m_pSceneEnd = new SceneEnd();
-				m_pSceneEnd->Create(m_device, m_hwnd);
+				m_pSceneEnd->Create(m_device, m_hwnd, LOWORD(wParam));
 				m_pNowScene = m_pSceneEnd;
 				m_nowPhase = END;
 			}

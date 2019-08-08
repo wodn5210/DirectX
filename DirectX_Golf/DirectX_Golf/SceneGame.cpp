@@ -8,6 +8,8 @@ SceneGame::SceneGame()
 	m_bSpaceBar = false;
 	m_bSelectMeshRender = false;
 	m_bEndGame = false;
+	m_bBallImpact = false;
+	m_bGoriInit = false;
 	m_sT = m_eT = 0;
 	m_BallEnergy = 0;
 	m_hitCount = 0;
@@ -38,6 +40,10 @@ SceneGame::~SceneGame()
 		delete m_pTreeObj;
 	if (m_pTri != NULL)
 		delete m_pTri;
+	if (m_pDust != NULL)
+		delete m_pDust;
+	if (m_pGori != NULL)
+		delete m_pGori;
 }
 
 HRESULT SceneGame::Create(LPDIRECT3DDEVICE9 device, HWND hWnd)
@@ -122,7 +128,7 @@ HRESULT SceneGame::_InitObj()
 	m_pTerrain->Create(m_device, m_pFrustum, &D3DXVECTOR3(1.0f, 0.05f, 1.0f), map_path, tex_path);
 
 	m_pBall = new ObjBall();
-	m_pBall->Create(m_device, m_pTerrain, D3DXVECTOR3(44.0f, 0.2f, -50.0f), 0.05f);
+	m_pBall->Create(m_device, m_pTerrain, D3DXVECTOR3(44.0f, 0.5f, -50.0f), 0.05f);
 
 	m_pBar = new ObjGauge();
 	m_pBar->Create(m_device);
@@ -141,15 +147,41 @@ HRESULT SceneGame::_InitObj()
 
 	m_pTri = new ObjTriangle(m_device);
 
+	m_pDust = new ObjDust(100);
+	m_pDust->Create(m_device, "src/golf/desert.bmp");
+
+	m_pGori = new ObjBallGori();
+	m_pGori->Create(m_device, m_pBall->GetCenter());
+
 	return S_OK;
 }
 
 VOID SceneGame::_ReadyRender()
 {
+
 	_InitLight();
 
+	m_ballState = m_pBall->MovePhysical(m_bBallImpact);
+	if (m_bBallImpact)
+	{
+		m_pDust->Reset(*(m_pBall->GetCenter()));
+		m_bBallImpact = false;
+	}
 
-	m_ballState = m_pBall->MovePhysical();
+	if (m_ballState == ObjBall::STOP && m_bGoriInit == false)
+	{
+		m_pGori->Init(m_pBall->GetCenter());
+		m_bGoriInit = true;
+	}
+	//렌더링 중일때
+	else if(m_bGoriInit == false)
+	{	
+		m_pGori->ReadyRender(m_pBall->GetCenter(), m_pBall->GetDir());
+	}
+	m_pDust->Update();
+
+
+	
 	
 
 	m_pTreeTex->SetBillBoard(m_pNowCam->GetBillBoard());
@@ -171,7 +203,7 @@ VOID SceneGame::_ReadyRender()
 BOOL SceneGame::_ISBallInHole()
 {
 	//원기둥 센터에서 대각선 길이 + 공 반지름
-	float in_size = m_pHole->GetR() * sqrtf(2.0f) + m_pBall->GetR();
+	float in_size = m_pHole->GetR() * 2 + m_pBall->GetR();
 
 	float dist = D3DXVec3Length(&(*m_pHole->GetCenter() - *m_pBall->GetCenter()));
 
@@ -182,12 +214,14 @@ BOOL SceneGame::_ISBallInHole()
 	return false;
 }
 
+
 VOID SceneGame::Rendering()
 {
 	if (NULL == m_device)
 		return;
 
 	_ReadyRender();
+
 	m_pNowCam->ResetView();
 
 	m_device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
@@ -197,13 +231,28 @@ VOID SceneGame::Rendering()
 
 	if (SUCCEEDED(m_device->BeginScene()))
 	{
+	
+
+		m_pDust->Render();
+
 		m_pTerrain->DrawMain();
 		m_pTreeObj->DrawMain();
 		m_pBall->DrawMain();
+		
 		m_pSkybox->DrawMain();
+	//	m_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		m_pHole->DrawMain();
+		
 		m_pTreeTex->DrawMain();
 		
+		if (m_bGoriInit == false)
+		{
+			
+			m_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+			m_pGori->DrawMain();
+			m_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+		}
 
 		if (m_bSpaceBar)
 			m_pBar->DrawMain();
@@ -247,10 +296,11 @@ VOID SceneGame::Rendering()
 	m_device->Present(NULL, NULL, NULL, NULL);
 
 
+	
 	//끝났다고 Engine에 알릴거임
 	m_bEndGame = _ISBallInHole();
 	if (m_bEndGame)
-		SendMessage(m_hWnd, m_hitCount, 0, 0);
+		SendMessage(m_hWnd, 0, m_hitCount, 0);
 }
 
 
@@ -289,6 +339,7 @@ int SceneGame::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			m_bBallCam = !m_bBallCam;
 			m_pNowCam = (m_bBallCam) ? m_pCamBall : m_pCamMain;
 			break;
+
 		case 'R':
 			m_pBall->Reset();
 			break;
@@ -331,6 +382,7 @@ int SceneGame::MsgProcess(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (m_ballState == ObjBall::STOP)
 			{
 				m_pBall->SetBallJump(m_BallEnergy, m_pNowCam->GetvView());
+				m_bGoriInit = false;
 			}
 
 			m_bSpaceBar = false;

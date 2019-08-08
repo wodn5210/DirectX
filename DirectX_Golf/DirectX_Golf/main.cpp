@@ -1,5 +1,7 @@
 
 #include <d3dx9.h>
+#include <cstdlib>
+#include <ctime>
 #include "Engine.h"
 
 #define HEIGHT 800
@@ -47,6 +49,7 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
+	srand((unsigned int)time(0));
 
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
 					  GetModuleHandle(NULL), NULL, NULL, NULL, NULL,

@@ -1,7 +1,8 @@
 #include "CamBall.h"
 CamBall::CamBall()
 {
-	m_ballEye = D3DXVECTOR3(3.0f, 1.0f, 0.0f);
+	//m_ballEye = D3DXVECTOR3(3.0f, 1.0f, 0.0f);
+	m_ballEye = D3DXVECTOR3(5.0f, 2.0f, 0.0f);
 	m_ballLookat = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	m_angleX = 0;
 }

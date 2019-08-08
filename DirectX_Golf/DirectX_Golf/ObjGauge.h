@@ -1,6 +1,6 @@
 #pragma once
 #include "ObjGraphic.h"
-#include "define.h"
+
 
 class ObjGauge :
 	public ObjGraphic

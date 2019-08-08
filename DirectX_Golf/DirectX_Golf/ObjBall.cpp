@@ -125,7 +125,7 @@ HRESULT ObjBall::_InitMtrlMap()
 }
 
 
-ObjBall::STATE ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
+ObjBall::STATE ObjBall::MovePhysical(BOOL& dust)
 {
 	int m_x = m_pTerrain->GetX() / 2;
 	int m_z = m_pTerrain->GetZ() / 2;
@@ -160,16 +160,25 @@ ObjBall::STATE ObjBall::MovePhysical(D3DXVECTOR3 terrain[3])
 	if (collision)
 	{
 		m_center.y = height + m_r/1.5f;
-		
-		
+		float spdLength = D3DXVec3Length(&m_vSpeed);
+
 		//방향바꾸고
 		m_vSpeed += 2 * norm * n;
-		m_vSpeed -= 0.001f * m_vSpeed;
-		//충격에 의한 속도 감소
+
+		//speed빠르면 충격도 크니까 먼지일어나게
+		if (spdLength > 0.3f)
+			dust = true;
+		
+
 		float impulse = 2.0f;
 		m_vSpeed /= impulse;
 
-		if (D3DXVec3Length(&m_vSpeed) < 0.005f)
+		m_vSpeed -= 0.1f * m_vSpeed;
+		
+		
+
+
+		if (spdLength < 0.01f)
 		{
 			//printf("멈춤");
 			m_vSpeed = D3DXVECTOR3(0, 0, 0);
