@@ -65,8 +65,9 @@ struct BAR_VTX
 };
 struct GORI_VTX
 {
-	enum _FVF { FVF = (D3DFVF_XYZ) };
+	enum _FVF { FVF = (D3DFVF_XYZ | D3DFVF_TEX1) };
 	D3DXVECTOR3 p;
+	D3DXVECTOR2	t;
 };
 struct Particle
 {

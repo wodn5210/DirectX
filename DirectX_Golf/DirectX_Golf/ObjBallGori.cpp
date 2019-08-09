@@ -2,7 +2,12 @@
 
 ObjBallGori::ObjBallGori()
 {
+	for (int i = 0; i < 11; i++)
+	{
 
+		m_vtx[2*i].t = D3DXVECTOR2(1.0f, i/10.0f);
+		m_vtx[2*i + 1].t = D3DXVECTOR2(0.0f, i/10.0f);
+	}
 }
 ObjBallGori::~ObjBallGori()
 {
@@ -12,6 +17,9 @@ ObjBallGori::~ObjBallGori()
 
 	if (m_pIB != NULL)
 		m_pIB->Release();
+
+	if (m_pTex != NULL)
+		m_pTex->Release();
 }
 
 void ObjBallGori::DrawMain()
@@ -26,7 +34,9 @@ void ObjBallGori::DrawMain()
 	_InitMtrl();
 	m_device->SetStreamSource(0, m_pVB, 0, sizeof(GORI_VTX));
 	m_device->SetFVF(GORI_VTX::FVF);
+	m_device->SetTexture(0, m_pTex);
 	m_device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 22, 0, 20);
+	m_device->SetTexture(0, NULL);
 
 }
 
@@ -37,13 +47,13 @@ HRESULT ObjBallGori::ReadyRender(D3DXVECTOR3* pos, D3DXVECTOR3* dir)
 	D3DXVec3Normalize(&cross, &cross);
 	GORI_VTX temp[22];
 	for (int i = 0; i < 22; i++)
-		temp[i] = m_vtx[i];
+		temp[i].p = m_vtx[i].p;
 	for (int i = 2; i < 22; i++) 
-		m_vtx[i] = temp[i - 2];
+		m_vtx[i].p = temp[i - 2].p;
 	
 
-	m_vtx[0].p = *pos - cross * 0.02f;
-	m_vtx[1].p = *pos + cross * 0.02f;
+	m_vtx[0].p = *pos - cross * 0.05f;
+	m_vtx[1].p = *pos + cross * 0.05f;
 
 
 	VOID* pVertices;
@@ -72,7 +82,10 @@ HRESULT ObjBallGori::Create(LPDIRECT3DDEVICE9 device, D3DXVECTOR3* pos)
 	{
 		return E_FAIL;
 	}
-
+	if (FAILED(_InitTexture()))
+	{
+		return E_FAIL;
+	}
 	
 
 	return S_OK;
@@ -158,6 +171,15 @@ HRESULT ObjBallGori::_InitIB()
 
 	return S_OK;
 }
+HRESULT ObjBallGori::_InitTexture()
+{
+	if (FAILED(D3DXCreateTextureFromFile(m_device, "src/golf/rainbow.bmp", &m_pTex)))
+	{
+		printf("¿¡·¯");
+		return E_FAIL;
+	}
+	return S_OK;
+}
 HRESULT ObjBallGori::_InitMtrl()
 {
 
@@ -165,8 +187,8 @@ HRESULT ObjBallGori::_InitMtrl()
 	D3DMATERIAL9 mtrl;
 	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
 	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-	mtrl.Diffuse.g = mtrl.Ambient.g = 0;
-	mtrl.Diffuse.b = mtrl.Ambient.b = 0;
+	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
+	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
 	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
 	m_device->SetMaterial(&mtrl);
 	return S_OK;

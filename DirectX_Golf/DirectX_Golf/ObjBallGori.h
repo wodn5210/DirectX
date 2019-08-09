@@ -10,6 +10,8 @@ class ObjBallGori :
 
 	LPDIRECT3DVERTEXBUFFER9 m_pVB;
 	LPDIRECT3DINDEXBUFFER9	m_pIB;
+	LPDIRECT3DTEXTURE9		m_pTex;
+
 
 	GORI_VTX m_vtx[22];
 
@@ -29,6 +31,7 @@ public:
 private:
 	HRESULT _InitVB(D3DXVECTOR3* pos);
 	HRESULT _InitIB();
+	HRESULT _InitTexture();
 	HRESULT _InitMtrl();
 
 };
