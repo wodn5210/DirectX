@@ -137,7 +137,8 @@ HRESULT SceneGame::_InitObj()
 	m_pSkybox->Create(m_device);
 
 	m_pHole = new ObjHole();
-	m_pHole->Create(m_device, D3DXVECTOR3(40.0f, -0.1f, -50.f), 0.15f);
+	//m_pHole->Create(m_device, D3DXVECTOR3(40.0f, -0.1f, -50.f), 0.15f);
+	m_pHole->Create(m_device, D3DXVECTOR3(-39.0f, 2.7f, 14.f), 0.15f);
 
 	m_pTreeTex = new ObjTreeTexture();
 	m_pTreeTex->Create(m_device, D3DXVECTOR3(30.0f, 2.0f, -50.0f), "src/golf/tree1.dds");

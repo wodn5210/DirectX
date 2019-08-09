@@ -4,7 +4,7 @@
 ObjDust::ObjDust(int numParticles)
 {
 	m_center = D3DXVECTOR3(-10.0f, -10.0f, -10.0f);
-	m_size = 0.02f;
+	m_size = 0.05f;
 	m_vbSize = 2048;
 	m_vbOffset = 0;
 	m_vbBatchSize = 512;
