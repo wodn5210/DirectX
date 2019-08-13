@@ -40,10 +40,11 @@ private:
 	ObjSkyBox* m_pSkybox;
 	ObjHole* m_pHole;
 	ObjTreeTexture* m_pTreeTex;
-	ObjTreeObjFile* m_pTreeObj;
+	ObjTreeObjFile* m_pTreeObj[4];
 	ObjTriangle* m_pTri;
 	ObjDust* m_pDust;
 	ObjBallGori* m_pGori;
+	ObjTriangle* m_pDir;
 
 	BOOL m_bRenderFrustum;
 	BOOL m_bBallCam;

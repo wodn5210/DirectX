@@ -52,19 +52,19 @@ HRESULT ObjGauge::ReadyRender(D3DXMATRIXA16 * pmatViewProj, float energy)
 
 	for (int i = 0; i < 20; i++)
 	{
-		D3DXVec3TransformCoord(&m_vtx[i].p, &m_projVTX[i].p, &matInv);
+		D3DXVec3TransformCoord(&m_worldVTX[i].p, &m_projVTX[i].p, &matInv);
 	}
 
 
 	/// 정점버퍼를 값으로 채운다. 
 	VOID* pVertices;
-	if (FAILED(m_pVB->Lock(0, sizeof(m_vtx), (void**)& pVertices, 0)))
+	if (FAILED(m_pVB->Lock(0, sizeof(m_worldVTX), (void**)& pVertices, 0)))
 	{
 		printf("할당 오류\n");
 		return E_FAIL;
 	}
 
-	memcpy(pVertices, m_vtx, sizeof(m_vtx));
+	memcpy(pVertices, m_worldVTX, sizeof(m_worldVTX));
 	m_pVB->Unlock();
 
 	return S_OK;

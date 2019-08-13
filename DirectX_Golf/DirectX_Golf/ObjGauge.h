@@ -12,7 +12,7 @@ class ObjGauge :
 	LPDIRECT3DINDEXBUFFER9	m_pIB_edge;
 
 	BAR_VTX m_projVTX[20];
-	BAR_VTX	m_vtx[20];
+	BAR_VTX	m_worldVTX[20];
 
 	
 

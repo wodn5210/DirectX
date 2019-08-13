@@ -21,10 +21,17 @@ public:
 	void DrawMain();
 	void DrawMap();
 	HRESULT Create(D3DXVECTOR3 pos[3]);
+	HRESULT Create();
 
+	BOOL Update(D3DXVECTOR3 pos, D3DXVECTOR3 dir, D3DXVECTOR3 cross);
+
+private:
 	HRESULT _InitVB(D3DXVECTOR3 pos[3]);
+	HRESULT _InitVB();
 	HRESULT _InitIB();
 	HRESULT _InitMtrl();
+
+
 
 	
 

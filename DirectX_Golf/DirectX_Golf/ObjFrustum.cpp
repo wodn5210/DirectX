@@ -216,4 +216,3 @@ BOOL	ObjFrustum::IsInSphere(D3DXVECTOR3* pv, float radius)
 	}
 	return TRUE;
 }
-

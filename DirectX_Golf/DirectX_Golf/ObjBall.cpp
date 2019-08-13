@@ -166,7 +166,7 @@ ObjBall::STATE ObjBall::MovePhysical(BOOL& dust)
 		m_vSpeed += 2 * norm * n;
 
 		//speed빠르면 충격도 크니까 먼지일어나게
-		if (spdLength > 0.3f)
+		if (spdLength > 0.25f)
 			dust = true;
 		
 
